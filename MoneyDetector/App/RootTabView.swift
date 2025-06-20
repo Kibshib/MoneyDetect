@@ -43,13 +43,13 @@ struct RootTabView: View {
 
             // остальные вкладки
             NavigationStack { AccountPlaceholder() }
-                .tabItem { Image("ic_account"); Text("Счёт") }
+                .tabItem { Image("ic_account").renderingMode(.template); Text("Счёт") }
 
             NavigationStack { ArticlesPlaceholder() }
-                .tabItem { Image("ic_articles"); Text("Статьи") }
+                .tabItem { Image("ic_articles").renderingMode(.template); Text("Статьи") }
 
             NavigationStack { SettingsPlaceholder() }
-                .tabItem { Image("ic_settings"); Text("Настройки") }
+                .tabItem { Image("ic_settings").renderingMode(.template); Text("Настройки") }
         }
         .accentColor(Color("AccentColor"))
        
