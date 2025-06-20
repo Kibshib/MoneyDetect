@@ -31,7 +31,7 @@ final class TransactionsFileCache {
         }
     }
     
-    
+    func getAll() -> [Transaction] { transactions }
     func load(fileName : String ) {
         do
         {

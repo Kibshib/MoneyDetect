@@ -6,7 +6,7 @@
 //
 
 import Foundation
-struct BankAccount: Codable {
+struct BankAccount: Codable,Identifiable {
     let id: Int
     let userId : Int
     let name : String

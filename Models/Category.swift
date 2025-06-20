@@ -10,7 +10,7 @@ enum Direction : String , Codable {
     case income
     case outcome
 }
-struct Category: Codable {
+struct Category: Codable,Identifiable {
     let id : Int
     let name : String
     let emoji : String
