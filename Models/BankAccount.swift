@@ -10,8 +10,8 @@ struct BankAccount: Codable,Identifiable {
     let id: Int
     let userId : Int
     let name : String
-    let balance : Decimal
-    let currency : String
+    var balance : Decimal
+    var currency : String
     let createdAt : String
     let updatedAt : String
 }

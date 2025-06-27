@@ -12,4 +12,6 @@ extension Decimal {
         nf.groupingSeparator = " "
         return (nf.string(from: self as NSNumber) ?? "0") + " ₽"
     }
+
+     
 }
