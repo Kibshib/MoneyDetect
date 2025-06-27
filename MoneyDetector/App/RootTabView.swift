@@ -42,7 +42,7 @@ struct RootTabView: View {
             }
 
             // остальные вкладки
-            NavigationStack { AccountPlaceholder() }
+            NavigationStack { AccountsView() }
                 .tabItem { Image("ic_account").renderingMode(.template); Text("Счёт") }
 
             NavigationStack { ArticlesPlaceholder() }

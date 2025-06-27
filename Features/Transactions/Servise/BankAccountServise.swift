@@ -12,12 +12,12 @@ final class BankAccountsService {
         id: 1,
         userId: 100,
         name: "Основной счёт",
-        balance: 50_000,
+        balance: 0,
         currency: "RUB",
         createdAt: "2025-06-01T10:00:00Z",
         updatedAt: "2025-06-10T14:00:00Z"
     )
-    func getAccount() async throws -> BankAccount {
+    func getAccount() async -> BankAccount {
           return account
     }
     func updateAccount(newAccount : BankAccount)  {

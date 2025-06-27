@@ -7,6 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		CE0DA4832E06D24100498F18 /* AccountsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE0DA4822E06D24100498F18 /* AccountsView.swift */; };
+		CE10066A2E0957920003458C /* Corrency.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE1006692E0957920003458C /* Corrency.swift */; };
+		CE10066C2E095EDB0003458C /* AccountViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE10066B2E095EDB0003458C /* AccountViewModel.swift */; };
+		CE10066E2E097AFA0003458C /* KeyboardOnTapModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE10066D2E097AFA0003458C /* KeyboardOnTapModifier.swift */; };
+		CE1006712E098FB00003458C /* ShakeDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE1006702E098FB00003458C /* ShakeDetector.swift */; };
+		CE1006732E0992600003458C /* SpoilerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE1006722E0992600003458C /* SpoilerView.swift */; };
+		CE1006752E0992890003458C /* SpoilerRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE1006742E0992890003458C /* SpoilerRepresentable.swift */; };
 		CE18ECC02E049033007D32B6 /* TransactionsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE18ECBF2E049033007D32B6 /* TransactionsViewModel.swift */; };
 		CE18ECC22E049051007D32B6 /* TransactionRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE18ECC12E049051007D32B6 /* TransactionRow.swift */; };
 		CE18ECC42E049077007D32B6 /* TransactionsListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE18ECC32E049077007D32B6 /* TransactionsListView.swift */; };
@@ -39,6 +46,13 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		CE0DA4822E06D24100498F18 /* AccountsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountsView.swift; sourceTree = "<group>"; };
+		CE1006692E0957920003458C /* Corrency.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Corrency.swift; sourceTree = "<group>"; };
+		CE10066B2E095EDB0003458C /* AccountViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountViewModel.swift; sourceTree = "<group>"; };
+		CE10066D2E097AFA0003458C /* KeyboardOnTapModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardOnTapModifier.swift; sourceTree = "<group>"; };
+		CE1006702E098FB00003458C /* ShakeDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShakeDetector.swift; sourceTree = "<group>"; };
+		CE1006722E0992600003458C /* SpoilerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpoilerView.swift; sourceTree = "<group>"; };
+		CE1006742E0992890003458C /* SpoilerRepresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpoilerRepresentable.swift; sourceTree = "<group>"; };
 		CE18ECBF2E049033007D32B6 /* TransactionsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionsViewModel.swift; sourceTree = "<group>"; };
 		CE18ECC12E049051007D32B6 /* TransactionRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionRow.swift; sourceTree = "<group>"; };
 		CE18ECC32E049077007D32B6 /* TransactionsListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionsListView.swift; sourceTree = "<group>"; };
@@ -81,6 +95,25 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		047353B92E0EBA2200DCD5DD /* ShakeEffect */ = {
+			isa = PBXGroup;
+			children = (
+				CE1006742E0992890003458C /* SpoilerRepresentable.swift */,
+				CE1006722E0992600003458C /* SpoilerView.swift */,
+				CE1006702E098FB00003458C /* ShakeDetector.swift */,
+			);
+			path = ShakeEffect;
+			sourceTree = "<group>";
+		};
+		CE10066F2E097B6D0003458C /* Account */ = {
+			isa = PBXGroup;
+			children = (
+				CE0DA4822E06D24100498F18 /* AccountsView.swift */,
+				CE10066B2E095EDB0003458C /* AccountViewModel.swift */,
+			);
+			path = Account;
+			sourceTree = "<group>";
+		};
 		CE612CB12DF9BF2900DFAEEC /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -100,6 +133,7 @@
 		CE855A422DF85CEE0044E282 = {
 			isa = PBXGroup;
 			children = (
+				047353B92E0EBA2200DCD5DD /* ShakeEffect */,
 				CEB8FFAB2E05EA45009A2ABC /* Supporting */,
 				CEB8FFA52E05E91F009A2ABC /* Features */,
 				CE855A642DF8892F0044E282 /* TransactionsFileCache */,
@@ -171,6 +205,8 @@
 			children = (
 				CE18ECC72E04B050007D32B6 /* RoundedCorner.swift */,
 				CE18ECC52E0490B0007D32B6 /* Decimal+Format.swift */,
+				CE10066D2E097AFA0003458C /* KeyboardOnTapModifier.swift */,
+				CE1006692E0957920003458C /* Corrency.swift */,
 			);
 			path = Extentions;
 			sourceTree = "<group>";
@@ -187,6 +223,7 @@
 		CEB8FFA52E05E91F009A2ABC /* Features */ = {
 			isa = PBXGroup;
 			children = (
+				CE10066F2E097B6D0003458C /* Account */,
 				CEB8FFA22E05E880009A2ABC /* Extentions */,
 				CEB8FFA92E05E99D009A2ABC /* History */,
 				CEB8FFA62E05E92D009A2ABC /* Transactions */,
@@ -353,18 +390,25 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CE1006752E0992890003458C /* SpoilerRepresentable.swift in Sources */,
 				CE612CAD2DF9972300DFAEEC /* TransactionServise.swift in Sources */,
+				CE10066A2E0957920003458C /* Corrency.swift in Sources */,
 				CE18ECC42E049077007D32B6 /* TransactionsListView.swift in Sources */,
+				CE0DA4832E06D24100498F18 /* AccountsView.swift in Sources */,
 				CE3CB17C2E04840E00ADABDD /* PlaceholderViews.swift in Sources */,
 				CE550E862E05622B00A28C5D /* RootTabView.swift in Sources */,
+				CE10066C2E095EDB0003458C /* AccountViewModel.swift in Sources */,
+				CE10066E2E097AFA0003458C /* KeyboardOnTapModifier.swift in Sources */,
 				CE18ECC22E049051007D32B6 /* TransactionRow.swift in Sources */,
 				CE855A602DF882340044E282 /* BankAccount.swift in Sources */,
 				CE855A5E2DF85D2E0044E282 /* Category.swift in Sources */,
+				CE1006732E0992600003458C /* SpoilerView.swift in Sources */,
 				CE855A662DF8894A0044E282 /* TransactionsFileCache.swift in Sources */,
 				CE18ECC82E04B050007D32B6 /* RoundedCorner.swift in Sources */,
 				CE612CA92DF996FD00DFAEEC /* CotegoriesServise.swift in Sources */,
 				CE18ECC02E049033007D32B6 /* TransactionsViewModel.swift in Sources */,
 				CE612CAB2DF9971500DFAEEC /* BankAccountServise.swift in Sources */,
+				CE1006712E098FB00003458C /* ShakeDetector.swift in Sources */,
 				CE855A4F2DF85CEF0044E282 /* MoneyDetectorApp.swift in Sources */,
 				CE855A622DF884170044E282 /* Transaction.swift in Sources */,
 				CE18ECC62E0490B0007D32B6 /* Decimal+Format.swift in Sources */,
