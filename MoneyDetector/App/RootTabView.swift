@@ -45,7 +45,7 @@ struct RootTabView: View {
             NavigationStack { AccountsView() }
                 .tabItem { Image("ic_account").renderingMode(.template); Text("Счёт") }
 
-            NavigationStack { ArticlesPlaceholder() }
+            NavigationStack { ArticlesView() }
                 .tabItem { Image("ic_articles").renderingMode(.template); Text("Статьи") }
 
             NavigationStack { SettingsPlaceholder() }
