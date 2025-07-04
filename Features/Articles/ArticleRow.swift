@@ -1,4 +1,12 @@
 //
+//  ArticleRow.swift
+//  MoneyDetector
+//
+//  Created by mac on 04.07.2025.
+//
+
+
+//
 //  ArticlesView.swift
 //  MoneyDetector
 //

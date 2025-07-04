@@ -1,4 +1,3 @@
-// 4 дз
 //  SpeechRecognizer.swift
 //  MoneyDetector
 //
@@ -7,7 +6,6 @@
 import SwiftUI
 import Combine
 import Speech
-
 
 final class SpeechRecognizer: ObservableObject {
     @Published var transcript: String = ""
