@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0473543E2E0FEFA300DCD5DD /* ArticlesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0473543C2E0FEFA300DCD5DD /* ArticlesViewModel.swift */; };
+		0473543F2E0FEFA300DCD5DD /* ArticlesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0473543B2E0FEFA300DCD5DD /* ArticlesView.swift */; };
+		047354422E0FF55A00DCD5DD /* SpeechRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 047354412E0FF55A00DCD5DD /* SpeechRecognizer.swift */; };
 		CE0DA4832E06D24100498F18 /* AccountsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE0DA4822E06D24100498F18 /* AccountsView.swift */; };
 		CE10066A2E0957920003458C /* Corrency.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE1006692E0957920003458C /* Corrency.swift */; };
 		CE10066C2E095EDB0003458C /* AccountViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE10066B2E095EDB0003458C /* AccountViewModel.swift */; };
@@ -46,6 +49,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		0473543B2E0FEFA300DCD5DD /* ArticlesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArticlesView.swift; sourceTree = "<group>"; };
+		0473543C2E0FEFA300DCD5DD /* ArticlesViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArticlesViewModel.swift; sourceTree = "<group>"; };
+		047354402E0FF3A800DCD5DD /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		047354412E0FF55A00DCD5DD /* SpeechRecognizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechRecognizer.swift; sourceTree = "<group>"; };
 		CE0DA4822E06D24100498F18 /* AccountsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountsView.swift; sourceTree = "<group>"; };
 		CE1006692E0957920003458C /* Corrency.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Corrency.swift; sourceTree = "<group>"; };
 		CE10066B2E095EDB0003458C /* AccountViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountViewModel.swift; sourceTree = "<group>"; };
@@ -105,6 +112,16 @@
 			path = ShakeEffect;
 			sourceTree = "<group>";
 		};
+		0473543D2E0FEFA300DCD5DD /* Articles */ = {
+			isa = PBXGroup;
+			children = (
+				0473543B2E0FEFA300DCD5DD /* ArticlesView.swift */,
+				047354412E0FF55A00DCD5DD /* SpeechRecognizer.swift */,
+				0473543C2E0FEFA300DCD5DD /* ArticlesViewModel.swift */,
+			);
+			path = Articles;
+			sourceTree = "<group>";
+		};
 		CE10066F2E097B6D0003458C /* Account */ = {
 			isa = PBXGroup;
 			children = (
@@ -157,6 +174,7 @@
 		CE855A4D2DF85CEF0044E282 /* MoneyDetector */ = {
 			isa = PBXGroup;
 			children = (
+				047354402E0FF3A800DCD5DD /* Info.plist */,
 				CEB8FFA32E05E8B9009A2ABC /* App */,
 				CE855A522DF85CF30044E282 /* Assets.xcassets */,
 				CE855A542DF85CF30044E282 /* Preview Content */,
@@ -223,6 +241,7 @@
 		CEB8FFA52E05E91F009A2ABC /* Features */ = {
 			isa = PBXGroup;
 			children = (
+				0473543D2E0FEFA300DCD5DD /* Articles */,
 				CE10066F2E097B6D0003458C /* Account */,
 				CEB8FFA22E05E880009A2ABC /* Extentions */,
 				CEB8FFA92E05E99D009A2ABC /* History */,
@@ -394,6 +413,8 @@
 				CE612CAD2DF9972300DFAEEC /* TransactionServise.swift in Sources */,
 				CE10066A2E0957920003458C /* Corrency.swift in Sources */,
 				CE18ECC42E049077007D32B6 /* TransactionsListView.swift in Sources */,
+				0473543E2E0FEFA300DCD5DD /* ArticlesViewModel.swift in Sources */,
+				0473543F2E0FEFA300DCD5DD /* ArticlesView.swift in Sources */,
 				CE0DA4832E06D24100498F18 /* AccountsView.swift in Sources */,
 				CE3CB17C2E04840E00ADABDD /* PlaceholderViews.swift in Sources */,
 				CE550E862E05622B00A28C5D /* RootTabView.swift in Sources */,
@@ -411,6 +432,7 @@
 				CE1006712E098FB00003458C /* ShakeDetector.swift in Sources */,
 				CE855A4F2DF85CEF0044E282 /* MoneyDetectorApp.swift in Sources */,
 				CE855A622DF884170044E282 /* Transaction.swift in Sources */,
+				047354422E0FF55A00DCD5DD /* SpeechRecognizer.swift in Sources */,
 				CE18ECC62E0490B0007D32B6 /* Decimal+Format.swift in Sources */,
 				CE18ECCA2E04BABC007D32B6 /* HistoryView.swift in Sources */,
 			);
@@ -588,6 +610,9 @@
 				DEVELOPMENT_TEAM = 5SU9DRVCW3;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MoneyDetector/Info.plist;
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Для записи голоса";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Для госового поиска";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -617,6 +642,9 @@
 				DEVELOPMENT_TEAM = 5SU9DRVCW3;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MoneyDetector/Info.plist;
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Для записи голоса";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Для госового поиска";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
