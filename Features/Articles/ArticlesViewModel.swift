@@ -13,7 +13,7 @@ final class ArticlesViewModel: ObservableObject {
     @Published var searchText: String = ""
     @Published private(set) var filtered: [Article] = []
 
-    private let catService = CategoriesService()
+    private let catService = CategoriesService.shared
 
     init() {
         Publishers.CombineLatest($articles, $searchText)
