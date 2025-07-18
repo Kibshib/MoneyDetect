@@ -1,8 +1,3 @@
-
-
-
-
-
 import SwiftUI
 
 struct TransactionsListView: View {
@@ -11,40 +6,58 @@ struct TransactionsListView: View {
     @StateObject private var vm = TransactionsViewModel()
     @State private var categories: [Int: Category] = [:]
 
-    private let categoryService = CategoriesService()
+
+    @State private var showCreator = false
+    @State private var editingTx: Transaction?
+ 
+
+    private let categoryService = CategoriesService.shared
 
     var body: some View {
-
         ZStack {
-
-            VStack(spacing: 10) {
+            VStack(spacing: 0) {
                 header
                 listView
             }
             .task { await reload() }
             .background(Color(.systemGroupedBackground))
 
-
-            Button { } label: {
+            Button {
+                showCreator = true
+            } label: {
                 Image(systemName: "plus")
                     .font(.title2.weight(.bold))
                     .foregroundColor(.white)
                     .frame(width: 56, height: 56)
-                    .background(
-                        Circle().fill(Color("AccentColor"))
-                    )
+                    .background(Circle().fill(Color("AccentColor")))
             }
             .padding(.trailing, 16)
             .padding(.bottom, 16)
-            .frame(maxWidth: .infinity, maxHeight: .infinity,
+            .frame(maxWidth: .infinity,
+                   maxHeight: .infinity,
                    alignment: .bottomTrailing)
         }
+    
+        .sheet(isPresented: $showCreator) {
+    TransactionEditorView(mode: .create(direction: direction)) {
+        Task { await reload() }
     }
+}
+.sheet(item: $editingTx) { tx in
+    TransactionEditorView(mode: .edit(transaction: tx,
+                                      direction: direction)) {
+        Task { await reload() }
+    }
+}
+    }
+
+    // MARK: – Header (без изменений)
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 0) {
 
             HStack {
+                Spacer()
                 NavigationLink {
                     HistoryView(categories: categories)
                 } label: {
@@ -53,15 +66,19 @@ struct TransactionsListView: View {
                         .foregroundColor(Color("ForHistory"))
                         .frame(width: 24, height: 24)
                 }
-                .frame(maxWidth: .infinity, alignment: .trailing)
+                .frame(maxWidth: .infinity,
+                       alignment: .trailing)
                 .padding(.trailing, 16)
+
+
             }
 
             Text(direction == .income ? "Доходы сегодня"
                                       : "Расходы сегодня")
                 .font(.largeTitle.bold())
-                .frame(maxWidth: .infinity, maxHeight: 44, alignment: .leading)
-
+                .frame(maxWidth: .infinity,
+                       maxHeight: 44,
+                       alignment: .leading)
 
             RoundedRectangle(cornerRadius: 16)
                 .fill(Color.white)
@@ -80,9 +97,12 @@ struct TransactionsListView: View {
         .padding(.top, 8)
     }
 
+ 
+
     private var listView: some View {
         List {
-            Section(header: Text("Операции")
+            Section(header:
+                        Text("Операции")
                         .font(.caption)
                         .textCase(.uppercase)) {
 
@@ -98,6 +118,9 @@ struct TransactionsListView: View {
                                     RoundedCorner(corners: rowCorners(index: idx))
                                 )
                         )
+                        .onTapGesture {
+                            editingTx = tx
+                        }
                 }
             }
         }
@@ -106,25 +129,25 @@ struct TransactionsListView: View {
         .padding(.horizontal, 16)
     }
 
-    // загрузка данных
+    // MARK: – Данные
+
     private func reload() async {
         async let _ = await loadCategories()
         await vm.load(direction: direction)
     }
 
     private func loadCategories() async {
-        if categories.isEmpty,
-           let cats = try? await categoryService.getAllCategories() {
-            categories = Dictionary(uniqueKeysWithValues: cats.map { ($0.id, $0) })
-        }
+        guard categories.isEmpty,
+              let cats = try? await categoryService.getAllCategories() else { return }
+        categories = Dictionary(uniqueKeysWithValues: cats.map { ($0.id, $0) })
     }
 
-    // скругление строк
+    // MARK: – Скругление строк
+
     private func rowCorners(index: Int) -> UIRectCorner {
         if vm.items.count == 1 { return .allCorners }
         if index == 0 { return [.topLeft, .topRight] }
         if index == vm.items.count - 1 { return [.bottomLeft, .bottomRight] }
         return []
     }
-
 }

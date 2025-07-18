@@ -7,20 +7,26 @@
 
 import Foundation
 final class BankAccountsService {
-    
-    private var account = BankAccount(
+    static let shared = BankAccountsService()
+    private var mainAccount = BankAccount(
         id: 1,
-        userId: 100,
+        userId: 1,
         name: "Основной счёт",
         balance: 0,
         currency: "RUB",
-        createdAt: "2025-06-01T10:00:00Z",
-        updatedAt: "2025-06-10T14:00:00Z"
+        createdAt: "",
+        updatedAt: ""
     )
+    private init() {}
     func getAccount() async -> BankAccount {
-          return account
+        return mainAccount
     }
     func updateAccount(newAccount : BankAccount)  {
-        account = newAccount
+        mainAccount = newAccount
+    }
+    func getMainAccount() async throws -> BankAccount {
+        mainAccount
     }
 }
+
+

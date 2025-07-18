@@ -16,20 +16,75 @@ struct HistoryView: View {
     enum SortKind: String, CaseIterable { case date = "Дата"; case amount = "Сумма" }
     @State private var sortKind: SortKind = .date
 
-    var body: some View {
-        VStack(spacing: 10) {
+    @State private var editingTx: Transaction? = nil
 
-            // Top bar
-            HStack {
-                Text("Моя история")
-                    .font(.largeTitle.bold())
-                Spacer()
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 10) {
+                // Top bar
+                HStack {
+                    Text("Моя история")
+                        .font(.largeTitle.bold())
+                    Spacer()
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
+                .navigationBarBackButtonHidden(true)
+                
+                VStack(spacing: 12) {
+                    row(title: "Начало", picker: $dateFrom)
+                    row(title: "Конец",  picker: $dateTo)
+
+                    HStack {
+                        Text("Сортировка")
+                        Spacer()
+                        Picker("", selection: $sortKind) {
+                            ForEach(SortKind.allCases, id: \.self) { kind in
+                                Text(kind.rawValue).tag(kind)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                        .frame(width: 180)
+                    }
+
+                    HStack {
+                        Text("Сумма")
+                        Spacer()
+                        Text(vm.total.formattedAmount).bold()
+                            .padding(.leading , 4)
+                    }
+                    .padding(.top , 7 )
+                }
+                .padding(12)
+                .background(RoundedRectangle(cornerRadius: 16).fill(Color.white))
+                .padding(.horizontal, 16)
+
+                listView
             }
-            .padding(.horizontal, 16)
-            .padding(.top, 8)
-            .navigationBarBackButtonHidden(true)
+            .background(Color(.systemGroupedBackground))
+            .onAppear  { Task { await reload() } }
+            .onChange(of: dateFrom) { newVal in
+                if newVal > dateTo { dateTo = newVal }
+                Task { await reload() }
+            }
+            .onChange(of: dateTo) { newVal in
+                if newVal < dateFrom { dateFrom = newVal }
+                Task { await reload() }
+            }
+            .onChange(of: sortKind) { _ in }
+            .sheet(item: $editingTx) { tx in
+                let direction: Direction = {
+                    if let cat = categories[tx.categoryId] {
+                        return cat.isIncome ? .income : .outcome // только для UI
+                    } else {
+                        return .outcome // fallback
+                    }
+                }()
+                TransactionEditorView(mode: .edit(transaction: tx, direction: direction)) {
+                    Task { await reload() } // всегда loadAll, direction не меняется
+                }
+            }
             .toolbar {
-        
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button { dismiss() } label: {
                         HStack(spacing: 4) {
@@ -39,57 +94,18 @@ struct HistoryView: View {
                     }
                     .foregroundColor(Color("ForHistory"))
                 }
-    
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button { /* share */ } label: {
+                    Button {
+                        let vc = AnalysisViewController()
+                        UIApplication.shared.windows.first?.rootViewController?.present(vc, animated: true)
+                    } label: {
                         Image(systemName: "doc")
                             .renderingMode(.template)
                             .foregroundColor(Color("ForHistory"))
                     }
                 }
             }
-
-            VStack(spacing: 12) {
-                row(title: "Начало", picker: $dateFrom)
-                row(title: "Конец",  picker: $dateTo)
-
-                HStack {
-                    Text("Сортировка")
-                    Spacer()
-                    Picker("", selection: $sortKind) {
-                        ForEach(SortKind.allCases, id: \.self) { kind in
-                            Text(kind.rawValue).tag(kind)
-                        }
-                    }
-                    .pickerStyle(.segmented)
-                    .frame(width: 180)
-                }
-
-                HStack {
-                    Text("Сумма")
-                    Spacer()
-                    Text(vm.total.formattedAmount).bold()
-                        .padding(.leading , 4)
-                }
-                .padding(.top , 7 )
-            }
-            .padding(12)
-            .background(RoundedRectangle(cornerRadius: 16).fill(Color.white))
-            .padding(.horizontal, 16)
-
-            listView
         }
-        .background(Color(.systemGroupedBackground))
-        .onAppear  { Task { await reload() } }
-        .onChange(of: dateFrom) { newVal in
-            if newVal > dateTo { dateTo = newVal }
-            Task { await reload() }
-        }
-        .onChange(of: dateTo) { newVal in
-            if newVal < dateFrom { dateFrom = newVal }
-            Task { await reload() }
-        }
-        .onChange(of: sortKind) { _ in }
     }
 
 
@@ -120,6 +136,9 @@ struct HistoryView: View {
                                     RoundedCorner(corners: rowCorners(idx: idx))
                                 )
                         )
+                        .onTapGesture {
+                            editingTx = tx
+                        }
                 }
             }
         }
@@ -132,7 +151,7 @@ struct HistoryView: View {
     private func reload() async {
         let endOfDay = Calendar.current.date(byAdding: .day, value: 1,
                       to: Calendar.current.startOfDay(for: dateTo))!
-        await vm.load(from: dateFrom, to: endOfDay)
+        await vm.loadAll(from: dateFrom, to: endOfDay)
     }
 
     private var sortedItems: [Transaction] {
