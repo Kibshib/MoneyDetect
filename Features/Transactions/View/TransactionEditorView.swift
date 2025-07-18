@@ -2,11 +2,8 @@
 //  TransactionEditorView.swift
 //  MoneyDetector
 //
-//  Created by User on 11.06.2025.
-//
 
 import SwiftUI
-
 
 struct TransactionEditorView: View {
 
@@ -14,283 +11,412 @@ struct TransactionEditorView: View {
     enum Mode {
         case create(direction: Direction)
         case edit(transaction: Transaction, direction: Direction)
+
+        var direction: Direction {
+            switch self {
+            case .create(let d): return d
+            case .edit(_, let d): return d
+            }
+        }
     }
 
-    // MARK: – Внешние зависимости
+    // MARK: – Внешние параметры
     let mode: Mode
-    var onFinish: (() -> Void)?          // вызывается при успешном save/delete
+    var onComplete: (() -> Void)? = nil
 
+    // MARK: – Сервисы
+    private let txService  = TransactionServise.shared
+    private let catService = CotegoriesServise.shared
+    private let accService = BankAccountServise.shared
 
-    private let txService  = TransactionsService.shared
-    private let catService = CategoriesService.shared
-    private let accService = BankAccountsService.shared
-
-
+    // MARK: – Локальное состояние
+    @State private var cats: [Category] = []          // локально отфильтрованные (по direction) категории
     @State private var selectedCategory: Category?
     @State private var amountText: String = ""
     @State private var date: Date         = Date()
     @State private var time: Date         = Date()
     @State private var comment: String    = ""
 
-    // MARK: – UI-state
+    // UI state
     @Environment(\.dismiss) private var dismiss
     @State private var showCategoryPicker = false
     @State private var showAlert          = false
     @State private var alertMessage       = ""
     @FocusState private var amountFocused : Bool
 
-    @State private var categories: [Category] = []
-    private let sep = Locale.current.decimalSeparator ?? ","
+    private var currentDirection: Direction { mode.direction }
 
+    // MARK: – Body
     var body: some View {
-        VStack(spacing: 0) {
-           
-            HStack {
-                Button("Отмена") { close() }
-                    .foregroundColor(Color("ForHistory"))
-                Spacer()
-                Button(actionButtonTitle) { save() }
-                    .foregroundColor(Color("ForHistory"))
-            }
-            .padding(.horizontal)
-            .padding(.top, 16)
-            
-            Text(title)
-                .font(.largeTitle).bold()
-                .frame(maxWidth: .infinity, alignment: .leading)
+        ScrollView {
+            VStack(alignment: .leading, spacing: 0) {
+
+                // Навбар-кнопки
+                HStack {
+                    Button("Отмена") { close() }
+                        .foregroundColor(Color("ForHistory"))
+                    Spacer()
+                    Button(actionButtonTitle) { save() }
+                        .foregroundColor(Color("ForHistory"))
+                }
                 .padding(.horizontal)
-                .padding(.top, 8)
-            
-  
-            VStack(spacing: 0) {
+                .padding(.top, 16)
+
+                // Заголовок
+                Text(title)
+                    .font(.largeTitle).bold()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal)
+                    .padding(.top, 8)
+
+                // Карточка полей
                 VStack(spacing: 0) {
-                    
-                    Button {
-                        showCategoryPicker = true
-                    } label: {
+                    VStack(spacing: 0) {
+
+                        // Статья
+                        Button {
+                            // Открываем лист сразу
+                            showCategoryPicker = true
+                            // Подгружаем при необходимости
+                            Task { await loadCategoriesIfNeeded() }
+                        } label: {
+                            HStack {
+                                Text("Статья")
+                                    .foregroundColor(.black)
+                                Spacer()
+                                Text(categoryTitle)
+                                    .foregroundColor(.secondary)
+                                Image(systemName: "chevron.right")
+                                    .foregroundColor(.secondary)
+                            }
+                            .padding(.vertical, 10)
+                            .padding(.horizontal, 16)
+                        }
+
+                        Divider().padding(.leading, 16)
+
+                        // Сумма
                         HStack {
-                            Text("Статья")
-                                .foregroundColor(.black)
+                            Text("Сумма")
                             Spacer()
-                            Text(categoryTitle)
+                            TextField("0", text: $amountText) { _ in formatAmount() }
+                                .multilineTextAlignment(.trailing)
+                                .keyboardType(.decimalPad)
+                                .focused($amountFocused)
+                                .onChange(of: amountText) { amountText = filtered($0) }
                                 .foregroundColor(.secondary)
-                            Image(systemName: "chevron.right")
-                                .foregroundColor(.secondary)
+                                .frame(width: 100)
                         }
                         .padding(.vertical, 10)
                         .padding(.horizontal, 16)
-                    }
-                    .confirmationDialog("Выберите статью",
-                                        isPresented: $showCategoryPicker) {
-                        ForEach(categories) { cat in
-                            Button(cat.name) { selectedCategory = cat }
+
+                        Divider().padding(.leading, 16)
+
+                        // Дата
+                        HStack {
+                            Text("Дата")
+                            Spacer()
+                            DatePicker("",
+                                       selection: $date,
+                                       in: ...Date(),
+                                       displayedComponents: .date)
+                                .labelsHidden()
+                                .background(
+                                    RoundedRectangle(cornerRadius: 7)
+                                        .fill(Color("AccentColorWithOpacity"))
+                                )
+                                .padding(.trailing, 0)
                         }
-                    }
-                    .tint(Color("ForHistory"))
-
-                    Divider().padding(.leading, 16)
-
-                 
-                    HStack {
-                        Text("Сумма")
-                        Spacer()
-                        TextField("0", text: $amountText) { _ in formatAmount() }
-                            .multilineTextAlignment(.trailing)
-                            .keyboardType(.decimalPad)
-                            .focused($amountFocused)
-                            .onChange(of: amountText) { amountText = filtered($0) }
-                            .foregroundColor(.secondary)
-                            .frame(width: 100)
-                    }
-                    .padding(.vertical, 10)
-                    .padding(.horizontal, 16)
-
-                    Divider().padding(.leading, 16)
-
-                  
-                    HStack {
-                        Text("Дата")
-                        Spacer()
-                        DatePicker("",
-                                   selection: $date,
-                                   in: ...Date(),
-                                   displayedComponents: .date)
-                        .background(
-                            RoundedRectangle(cornerRadius: 7)
-                                .fill(Color("AccentColorWithOpacity"))
-                               
-                   
-                        )
-                        .environment(\.locale, Locale(identifier: "ru_RU"))
-                        .labelsHidden()
-                        
-                        
-
-                    }
-                    .padding(.vertical, 6)
-                    .padding(.horizontal, 16)
-
-                    Divider().padding(.leading, 16)
-
-                    // Время
-                    HStack {
-                        Text("Время")
-                        Spacer()
-                        DatePicker("",
-                                   selection: $time,
-                                   displayedComponents: .hourAndMinute)
-                        .labelsHidden()
-                        .background(
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(Color("AccentColorWithOpacity"))
-                        )
-                        .padding(.trailing, 0)
-                   
-                    }
-                    .padding(.vertical, 6)
-                    .padding(.horizontal, 16)
-
-                    Divider().padding(.leading, 16)
-
-             
-                    ZStack(alignment: .topLeading) {
-                        TextEditor(text: $comment)
-                            .frame(height: 44)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical , 0 )
-                            .background(Color.clear)
-                        if comment.isEmpty {
-                            Text("Комментарий")
-                                .foregroundColor(.secondary)
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 12)
-                        }
-                    }
-                }
-                .background(Color.white)
-                .cornerRadius(16)
-                .padding(.horizontal)
-                .padding(.top, 16)
-                
-            }
-            
-        
-            if case .edit(let tx, _) = mode {
-                Button(role: .destructive) {
-                    txService.deleteTransaction(id: tx.id)
-                    close()
-                } label: {
-                    Text(currentDirection == .income ? "Удалить доход" : "Удалить расход")
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.vertical, 12)
+                        .padding(.vertical, 6)
                         .padding(.horizontal, 16)
+
+                        Divider().padding(.leading, 16)
+
+                        // Время
+                        HStack {
+                            Text("Время")
+                            Spacer()
+                            DatePicker("",
+                                       selection: $time,
+                                       displayedComponents: .hourAndMinute)
+                                .labelsHidden()
+                                .background(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .fill(Color("AccentColorWithOpacity"))
+                                )
+                                .padding(.trailing, 0)
+                        }
+                        .padding(.vertical, 6)
+                        .padding(.horizontal, 16)
+
+                        Divider().padding(.leading, 16)
+
+                        // Комментарий
+                        ZStack(alignment: .topLeading) {
+                            TextEditor(text: $comment)
+                                .frame(height: 44)
+                                .padding(.vertical , 0 )
+                                .background(Color.clear)
+                            if comment.isEmpty {
+                                Text("Комментарий")
+                                    .foregroundColor(.secondary)
+                                    .padding(.vertical, 12)
+                            }
+                        }
+                        .padding(.vertical, 2)
+                        .frame(height: 44)
+                        .background(Color("AccentColorWithOpacity"))
+                        .clipShape(RoundedCorner(radius: 8))
+                        .padding(.horizontal, 16)
+                    }
                 }
                 .background(
                     RoundedRectangle(cornerRadius: 16)
                         .fill(Color.white)
                 )
-                .padding(.top, 16)        
+                .padding(.top, 16)
                 .padding(.horizontal, 16)
+
+                // Destructive delete (только в edit)
+                if case .edit(let tx, _) = mode {
+                    Button(role: .destructive) {
+                        Task {
+                            await txService.deleteTransaction(id: tx.id)
+                            onComplete?()
+                            close()
+                        }
+                    } label: {
+                        Text(currentDirection == .income ? "Удалить доход" : "Удалить расход")
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.vertical, 12)
+                            .padding(.horizontal, 16)
+                            .foregroundColor(.red)
+                            .background(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .fill(Color.white)
+                            )
+                            .padding(.top, 16)
+                            .padding(.horizontal, 16)
+                    }
+                }
+
+                Spacer(minLength: 20)
             }
-            
-            Spacer()
+            .hideKeyboardOnTap()
         }
         .background(Color(.systemGroupedBackground).ignoresSafeArea())
-        .alert("Ошибка", isPresented: $showAlert) { }
-        message: { Text(alertMessage) }
+        .alert("Ошибка", isPresented: $showAlert) { } message: { Text(alertMessage) }
+        .sheet(isPresented: $showCategoryPicker) {
+            CategoryPickerSheet(
+                categories: cats,
+                selected: $selectedCategory
+            )
+            .presentationDetents([.medium, .large])
+        }
+        // при первом появлении — префетчим категории + инициализируем edit
         .task { await initData() }
     }
 
-
+    // MARK: – Init data
+    @MainActor
     private func initData() async {
-        categories = (try? await catService.getExpenseIncome(direction: currentDirection)) ?? []
-
-        guard case .edit(let tx, _) = mode else { return }
-        selectedCategory = categories.first { $0.id == tx.categoryId }
-        amountText       = tx.amount.currencyString
-        date             = tx.transactionDate
-        time             = tx.transactionDate
-        comment          = tx.comment
+        await loadCategoriesIfNeeded()      // ← заранее грузим, чтобы лист не был пустым
+        if case .edit(let tx, _) = mode {
+            selectedCategory = cats.first { $0.id == tx.categoryId }
+            amountText       = tx.amount.currencyString
+            date             = tx.transactionDate
+            time             = tx.transactionDate
+            comment          = tx.comment
+        }
     }
 
+    /// Загрузить категории, если их ещё нет (учитывая direction).
+    private func loadCategoriesIfNeeded() async {
+        // Если уже есть — ничего не делаем
+        let haveCats = await MainActor.run { !self.cats.isEmpty }
+        if haveCats { return }
 
-    private func save() {
-        guard let cat = selectedCategory else { showError("Выберите статью"); return }
-        guard let amt = Decimal.from(string: amountText) else { showError("Введите сумму"); return }
-        guard !comment.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            showError("Введите комментарий"); return
+        // Убедимся, что глобальный сервис загружен
+        if catService.categories.isEmpty {
+            await catService.loadCategories()   // это асинхронная сеть
         }
 
+        let filtered = catService.categories.filter {
+            currentDirection == .income ? $0.isIncome : !$0.isIncome
+        }
 
-        let composedDate = Calendar.current.date(
-            bySettingHour: Calendar.current.component(.hour, from: time),
-            minute:        Calendar.current.component(.minute, from: time),
-            second: 0,
-            of: date
-        ) ?? date
+        await MainActor.run {
+            self.cats = filtered
+            // при создании можно автоселект первой категории
+            if self.selectedCategory == nil, let first = filtered.first {
+                self.selectedCategory = first
+            }
+        }
+    }
+
+    // MARK: – UI Strings
+    private var title: String {
+        switch mode {
+        case .create(let d):
+            return d == .income ? "Новый доход" : "Новый расход"
+        case .edit(_, let d):
+            return d == .income ? "Редактирование дохода" : "Редактирование расхода"
+        }
+    }
+
+    private var actionButtonTitle: String {
+        switch mode {
+        case .create: return "Добавить"
+        case .edit:   return "Сохранить"
+        }
+    }
+
+    private var categoryTitle: String {
+        selectedCategory?.name ?? "Выберите категорию"
+    }
+
+    // MARK: – Actions
+    private func close() { dismiss() }
+
+    private func save() {
+        guard let cat = selectedCategory else {
+            showError("Выберите категорию.")
+            return
+        }
+        guard let amt = Decimal.from(string: amountText) else {
+            showError("Неверная сумма.")
+            return
+        }
+
+        let composedDate = composeDateAndTime(date: date, time: time)
 
         switch mode {
         case .create:
             Task {
-                if let acc = try? await accService.getMainAccount() {
-                    _ = txService.createTransaction(accountId: acc.id,
-                                                     categoryId: cat.id,
-                                                     amount: amt,
-                                                     date: composedDate,
-                                                     comment: comment)
-                    close()
+                let accountId: Int
+                if let acc = accService.account {
+                    accountId = acc.id
+                } else {
+                    await accService.loadMainAccount()
+                    guard let acc2 = accService.account else {
+                        showError("Счёт недоступен.")
+                        return
+                    }
+                    accountId = acc2.id
                 }
+                await txService.createTransaction(
+                    categoryId: cat.id,
+                    amount: amt,
+                    date: composedDate,
+                    comment: comment
+                )
+                onComplete?()
+                close()
             }
         case .edit(let tx, _):
-            let upd = Transaction(id: tx.id,
-                                  accountId: tx.accountId,
-                                  categoryId: cat.id,
-                                  amount: amt,
-                                  transactionDate: composedDate,
-                                  comment: comment,
-                                  createdAt: tx.createdAt,
-                                  updatedAt: Date())
-            txService.upgradeTransaction(upd)
-            close()
+            Task {
+                await txService.updateTransaction(
+                    tx,
+                    categoryId: cat.id,
+                    amount: amt,
+                    date: composedDate,
+                    comment: comment
+                )
+                onComplete?()
+                close()
+            }
         }
     }
 
- 
-    private func filtered(_ str: String) -> String {
-        var f = str.filter { $0.isWholeNumber || String($0) == sep }
-        if f.split(separator: Character(sep)).count > 2 { f.removeLast() }
-        return f
-    }
+    // MARK: – Helpers
 
+    /// Форматируем сумму при завершении ввода
     private func formatAmount() {
-        guard !amountText.isEmpty,
-              let dec = Decimal.from(string: amountText) else { return }
-        amountText = dec.currencyString
-    }
-
-    private func showError(_ msg: String) { alertMessage = msg; showAlert = true }
-    private func close() { onFinish?(); dismiss() }
-
-
-    private var currentDirection: Direction {
-        switch mode {
-        case .create(let d): d
-        case .edit(_, let d): d
+        if let d = Decimal.from(string: amountText) {
+            amountText = d.currencyString
         }
     }
 
-    private var categoryTitle: String { selectedCategory?.name ?? "—" }
-
-    private var title: String {
-        currentDirection == .income ? "Мои Доходы" : "Мои Расходы"
+    /// Фильтрация ввода: оставляем цифры + локальный разделитель
+    private func filtered(_ str: String) -> String {
+        let sep = decimalSeparator
+        var result = str.filter { $0.isWholeNumber || String($0) == sep }
+        // только один разделитель
+        if result.split(separator: Character(sep)).count > 2 {
+            result.removeLast()
+        }
+        return result
     }
 
-    private var actionButtonTitle: String {
-        switch mode { case .create: "Создать"; case .edit: "Сохранить" }
+    private var decimalSeparator: String {
+        let nf = NumberFormatter()
+        nf.numberStyle = .decimal
+        nf.locale = .current
+        return nf.decimalSeparator ?? ","
+    }
+
+    /// Собираем дату и время в один Date
+    private func composeDateAndTime(date: Date, time: Date) -> Date {
+        let cal = Calendar.current
+        let d = cal.dateComponents([.year,.month,.day], from: date)
+        let t = cal.dateComponents([.hour,.minute], from: time)
+        var comps = DateComponents()
+        comps.year = d.year; comps.month = d.month; comps.day = d.day
+        comps.hour = t.hour; comps.minute = t.minute
+        return cal.date(from: comps) ?? date
+    }
+
+    private func showError(_ msg: String) {
+        alertMessage = msg
+        showAlert = true
     }
 }
 
 
+// MARK: – Category Picker Sheet
+/// Упрощено: спиннер показываем, пока массив категорий пуст.
+private struct CategoryPickerSheet: View {
+    let categories: [Category]
+    @Binding var selected: Category?
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            Group {
+                if categories.isEmpty {
+                    ProgressView("Загрузка категорий…")
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else {
+                    List(categories) { cat in
+                        HStack {
+                            Text(cat.emoji)
+                            Text(cat.name)
+                            Spacer()
+                            if selected?.id == cat.id {
+                                Image(systemName: "checkmark")
+                                    .foregroundColor(.accentColor)
+                            }
+                        }
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            selected = cat
+                            dismiss()
+                        }
+                    }
+                }
+            }
+            .navigationTitle("Категория")
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Закрыть") { dismiss() }
+                }
+            }
+        }
+    }
+}
+
+
+// MARK: – Decimal helpers
 private extension Decimal {
     static func from(string: String) -> Decimal? {
         let nf = NumberFormatter()
@@ -298,7 +424,6 @@ private extension Decimal {
         nf.locale      = Locale.current
         return nf.number(from: string)?.decimalValue
     }
-
     var currencyString: String {
         let nf = NumberFormatter()
         nf.numberStyle = .currency
@@ -308,9 +433,7 @@ private extension Decimal {
 }
 
 #if DEBUG
-
 struct TransactionEditorView_Previews: PreviewProvider {
-
     private static var mockTx: Transaction {
         Transaction(id: 42,
                     accountId: 1,
@@ -321,12 +444,10 @@ struct TransactionEditorView_Previews: PreviewProvider {
                     createdAt: Date(),
                     updatedAt: Date())
     }
-
     static var previews: some View {
         Group {
             TransactionEditorView(mode: .create(direction: .income))
-            TransactionEditorView(mode: .edit(transaction: mockTx,
-                                              direction: .income))
+            TransactionEditorView(mode: .edit(transaction: mockTx, direction: .income))
         }
         .environment(\.locale, Locale(identifier: "ru_RU"))
         .previewDisplayName("Transaction Editor")

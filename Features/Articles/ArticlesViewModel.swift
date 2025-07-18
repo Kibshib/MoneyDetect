@@ -9,36 +9,59 @@ import SwiftUI
 @MainActor
 final class ArticlesViewModel: ObservableObject {
 
+    // Полный список статей (из категорий)
     @Published private(set) var articles: [Article] = []
-    @Published var searchText: String = ""
+
+    // Текст поиска
+    @Published var searchText: String = "" {
+        didSet { applyFilter() }
+    }
+
+    // Отфильтрованный список
     @Published private(set) var filtered: [Article] = []
 
-    private let catService = CategoriesService.shared
+    // Сервис категорий (сеть + кэш)
+    private let catService = CotegoriesServise.shared
 
     init() {
-        Publishers.CombineLatest($articles, $searchText)
-            .debounce(for: .milliseconds(150), scheduler: RunLoop.main)      // плавнее
-            .map { list, query in
-                guard !query.isEmpty else { return list }
-                return list.filter { Self.fuzzy(src: $0.title, pat: query) }
+        // Когда сервис обновил категории — перестраиваем статьи
+        catService.$categories
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.rebuildArticles()
             }
-            .assign(to: &$filtered)
-
-        Task { await loadCategories() }
+            .store(in: &cancellables)
     }
 
-    func reload() async { await loadCategories() }
+    // MARK: API
 
-    // MARK: – Data
-
-    private func loadCategories() async {
-        guard let cats = try? await catService.getAllCategories() else { return }
-        articles = cats.map { Article(id: $0.id, title: $0.name, icon: $0.emoji) }
-        filtered = articles
+    /// Первичная (или форс) загрузка категорий
+    func reload(force: Bool = false) async {
+        await catService.loadCategories(force: force)
+        rebuildArticles()
     }
 
-    // MARK: – Fuzzy без сторонних библиотек
+    /// Пересобрать массив `articles` из сервиса
+    func rebuildArticles() {
+        articles = catService.categories.map(Article.init(category:))
+        applyFilter()
+    }
 
+    // MARK: Filtering
+
+    private func applyFilter() {
+        let q = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !q.isEmpty else {
+            filtered = articles
+            return
+        }
+        filtered = articles.filter {
+            Self.fuzzy(src: $0.title, pat: q) ||
+            Self.fuzzy(src: $0.icon,  pat: q)
+        }
+    }
+
+    // MARK: – Fuzzy (минимальный)
     private static func fuzzy(src: String, pat: String) -> Bool {
         let s = src.lowercased(), p = pat.lowercased()
         var i = s.startIndex
@@ -48,4 +71,7 @@ final class ArticlesViewModel: ObservableObject {
         }
         return true
     }
+
+    // MARK: Private
+    private var cancellables = Set<AnyCancellable>()
 }

@@ -10,6 +10,10 @@
 		0473543E2E0FEFA300DCD5DD /* ArticlesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0473543C2E0FEFA300DCD5DD /* ArticlesViewModel.swift */; };
 		0473543F2E0FEFA300DCD5DD /* ArticlesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0473543B2E0FEFA300DCD5DD /* ArticlesView.swift */; };
 		047354422E0FF55A00DCD5DD /* SpeechRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 047354412E0FF55A00DCD5DD /* SpeechRecognizer.swift */; };
+		048F0C3B2E28E8A400607C3A /* NetworkClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 048F0C3A2E28E6BE00607C3A /* NetworkClient.swift */; };
+		048F0C3C2E28E8BD00607C3A /* AppSecrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 048F0C392E28E68F00607C3A /* AppSecrets.swift */; };
+		048F0C3E2E28EACB00607C3A /* View+LoadingAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 048F0C3D2E28EAC900607C3A /* View+LoadingAlert.swift */; };
+		048F0C402E28F06400607C3A /* ArticleModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 048F0C3F2E28F06300607C3A /* ArticleModel.swift */; };
 		049E36E82E218B8F0050644C /* TransactionEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049E36E72E218B8C0050644C /* TransactionEditorView.swift */; };
 		049E36ED2E21DC360050644C /* AnalysisViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049E36EC2E21DC340050644C /* AnalysisViewController.swift */; };
 		049E36F12E21FA090050644C /* SimpleCalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049E36F02E21FA090050644C /* SimpleCalendarView.swift */; };
@@ -57,6 +61,10 @@
 		0473543C2E0FEFA300DCD5DD /* ArticlesViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArticlesViewModel.swift; sourceTree = "<group>"; };
 		047354402E0FF3A800DCD5DD /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		047354412E0FF55A00DCD5DD /* SpeechRecognizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechRecognizer.swift; sourceTree = "<group>"; };
+		048F0C392E28E68F00607C3A /* AppSecrets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSecrets.swift; sourceTree = "<group>"; };
+		048F0C3A2E28E6BE00607C3A /* NetworkClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkClient.swift; sourceTree = "<group>"; };
+		048F0C3D2E28EAC900607C3A /* View+LoadingAlert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+LoadingAlert.swift"; sourceTree = "<group>"; };
+		048F0C3F2E28F06300607C3A /* ArticleModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArticleModel.swift; sourceTree = "<group>"; };
 		049E36E72E218B8C0050644C /* TransactionEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionEditorView.swift; sourceTree = "<group>"; };
 		049E36EC2E21DC340050644C /* AnalysisViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalysisViewController.swift; sourceTree = "<group>"; };
 		049E36F02E21FA090050644C /* SimpleCalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimpleCalendarView.swift; sourceTree = "<group>"; };
@@ -123,11 +131,21 @@
 		0473543D2E0FEFA300DCD5DD /* Articles */ = {
 			isa = PBXGroup;
 			children = (
+				048F0C3F2E28F06300607C3A /* ArticleModel.swift */,
 				0473543B2E0FEFA300DCD5DD /* ArticlesView.swift */,
 				047354412E0FF55A00DCD5DD /* SpeechRecognizer.swift */,
 				0473543C2E0FEFA300DCD5DD /* ArticlesViewModel.swift */,
 			);
 			path = Articles;
+			sourceTree = "<group>";
+		};
+		048F0C382E28E68A00607C3A /* Networking */ = {
+			isa = PBXGroup;
+			children = (
+				048F0C3A2E28E6BE00607C3A /* NetworkClient.swift */,
+				048F0C392E28E68F00607C3A /* AppSecrets.swift */,
+			);
+			path = Networking;
 			sourceTree = "<group>";
 		};
 		049E36EB2E21DC240050644C /* Analysis */ = {
@@ -168,6 +186,7 @@
 		CE855A422DF85CEE0044E282 = {
 			isa = PBXGroup;
 			children = (
+				048F0C382E28E68A00607C3A /* Networking */,
 				047353B92E0EBA2200DCD5DD /* ShakeEffect */,
 				CEB8FFAB2E05EA45009A2ABC /* Supporting */,
 				CEB8FFA52E05E91F009A2ABC /* Features */,
@@ -316,6 +335,7 @@
 		CEB8FFAB2E05EA45009A2ABC /* Supporting */ = {
 			isa = PBXGroup;
 			children = (
+				048F0C3D2E28EAC900607C3A /* View+LoadingAlert.swift */,
 				CE3CB17B2E04840E00ADABDD /* PlaceholderViews.swift */,
 			);
 			path = Supporting;
@@ -434,10 +454,12 @@
 				049E36E82E218B8F0050644C /* TransactionEditorView.swift in Sources */,
 				CE10066A2E0957920003458C /* Corrency.swift in Sources */,
 				CE18ECC42E049077007D32B6 /* TransactionsListView.swift in Sources */,
+				048F0C3C2E28E8BD00607C3A /* AppSecrets.swift in Sources */,
 				0473543E2E0FEFA300DCD5DD /* ArticlesViewModel.swift in Sources */,
 				049E36F12E21FA090050644C /* SimpleCalendarView.swift in Sources */,
 				0473543F2E0FEFA300DCD5DD /* ArticlesView.swift in Sources */,
 				CE0DA4832E06D24100498F18 /* AccountsView.swift in Sources */,
+				048F0C402E28F06400607C3A /* ArticleModel.swift in Sources */,
 				CE3CB17C2E04840E00ADABDD /* PlaceholderViews.swift in Sources */,
 				CE550E862E05622B00A28C5D /* RootTabView.swift in Sources */,
 				049E36ED2E21DC360050644C /* AnalysisViewController.swift in Sources */,
@@ -445,7 +467,9 @@
 				CE10066E2E097AFA0003458C /* KeyboardOnTapModifier.swift in Sources */,
 				CE18ECC22E049051007D32B6 /* TransactionRow.swift in Sources */,
 				CE855A602DF882340044E282 /* BankAccount.swift in Sources */,
+				048F0C3E2E28EACB00607C3A /* View+LoadingAlert.swift in Sources */,
 				CE855A5E2DF85D2E0044E282 /* Category.swift in Sources */,
+				048F0C3B2E28E8A400607C3A /* NetworkClient.swift in Sources */,
 				CE1006732E0992600003458C /* SpoilerView.swift in Sources */,
 				049E36F32E21FC6B0050644C /* SimpleCalendarSheetViewController.swift in Sources */,
 				CE855A662DF8894A0044E282 /* TransactionsFileCache.swift in Sources */,

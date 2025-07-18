@@ -42,7 +42,7 @@ private struct SearchBar: View {
             TextField("Search", text: $text)
                 .textInputAutocapitalization(.never)
                 .disableAutocorrection(true)
-                .focused($focused)           // фокус для «Done»
+                .focused($focused)
                 .submitLabel(.done)
 
             if !text.isEmpty {
@@ -73,6 +73,7 @@ private struct SearchBar: View {
 // MARK: – Экран
 struct ArticlesView: View {
     @StateObject private var vm = ArticlesViewModel()
+    @EnvironmentObject private var categoriesService: CotegoriesServise
 
     var body: some View {
         VStack(spacing: 10) {
@@ -91,8 +92,8 @@ struct ArticlesView: View {
             // Список
             List {
                 Section(header: Text("СТАТЬИ")
-                            .font(.caption)
-                            .textCase(.uppercase)) {
+                    .font(.caption)
+                    .textCase(.uppercase)) {
 
                     ForEach(vm.filtered, id: \.id) { art in
                         ArticleRow(article: art)
@@ -107,11 +108,18 @@ struct ArticlesView: View {
                 }
             }
             .listStyle(.plain)
-            .refreshable { await vm.reload() }
+            .refreshable { await vm.reload(force: true) }
             .padding(.horizontal, 16)
         }
         .background(Color(.systemGroupedBackground))
         .navigationBarTitleDisplayMode(.inline)
+        // индикатор/алерт из сетевого сервиса категорий
+        .overlayLoading(categoriesService.isLoading)
+        .errorAlert(message: $categoriesService.errorMessage)
+        // первая загрузка
+        .task {
+            await vm.reload()
+        }
     }
 
     // MARK: – углы
@@ -127,6 +135,7 @@ struct ArticlesView: View {
 struct ArticlesView_Previews: PreviewProvider {
     static var previews: some View {
         NavigationStack { ArticlesView() }
+            .environmentObject(CotegoriesServise.shared)
     }
 }
 #endif

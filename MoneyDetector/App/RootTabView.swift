@@ -1,19 +1,15 @@
-//
-//  RootTabView.swift
-//  MoneyDetector
-//
-//  Created by User on 20.06.2025.
-//
 import SwiftUI
 
 struct RootTabView: View {
 
- 
+    @StateObject private var accountService       = BankAccountServise.shared
+    @StateObject private var categoriesService    = CotegoriesServise.shared
+    @StateObject private var transactionsService  = TransactionServise.shared // держим живым
+
     init() {
         let appearance = UITabBarAppearance()
         appearance.configureWithOpaqueBackground()
         appearance.backgroundColor = .white
-
         UITabBar.appearance().standardAppearance = appearance
         if #available(iOS 15.0, *) {
             UITabBar.appearance().scrollEdgeAppearance = appearance
@@ -22,7 +18,6 @@ struct RootTabView: View {
 
     var body: some View {
         TabView {
-            
             // Расходы
             NavigationStack {
                 TransactionsListView(direction: .outcome)
@@ -41,18 +36,45 @@ struct RootTabView: View {
                 Text("Доходы")
             }
 
-            // остальные вкладки
-            NavigationStack { AccountsView() }
-                .tabItem { Image("ic_account").renderingMode(.template); Text("Счёт") }
+            // Счёт
+            NavigationStack {
+                AccountsView()
+            }
+            .tabItem {
+                Image("ic_account").renderingMode(.template)
+                Text("Счёт")
+            }
 
-            NavigationStack { ArticlesView() }
-                .tabItem { Image("ic_articles").renderingMode(.template); Text("Статьи") }
+            // Статьи
+            NavigationStack {
+                ArticlesView()
+            }
+            .tabItem {
+                Image("ic_articles").renderingMode(.template)
+                Text("Статьи")
+            }
 
-            NavigationStack { SettingsPlaceholder() }
-                .tabItem { Image("ic_settings").renderingMode(.template); Text("Настройки") }
+            // Настройки (inline текст)
+            NavigationStack {
+                Text("Настройки в разработке")
+                    .foregroundColor(.secondary)
+                    .padding()
+                    .navigationTitle("Настройки")
+            }
+            .tabItem {
+                Image("ic_settings").renderingMode(.template)
+                Text("Настройки")
+            }
         }
         .accentColor(Color("AccentColor"))
-       
+        // пробрасываем сервисы в окружение
+        .environmentObject(accountService)
+        .environmentObject(categoriesService)
+        .environmentObject(transactionsService)
+        // базовые загрузки
+        .task {
+            await categoriesService.loadCategories()
+            await accountService.loadMainAccount()
+        }
     }
 }
-

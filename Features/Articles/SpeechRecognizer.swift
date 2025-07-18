@@ -1,11 +1,14 @@
+//
 //  SpeechRecognizer.swift
 //  MoneyDetector
 //
 //  Created by mac on 28.06.2025.
 //
+
 import SwiftUI
 import Combine
 import Speech
+import AVFoundation
 
 final class SpeechRecognizer: ObservableObject {
     @Published var transcript: String = ""
@@ -15,10 +18,14 @@ final class SpeechRecognizer: ObservableObject {
     private let audioEngine = AVAudioEngine()
     private var request: SFSpeechAudioBufferRecognitionRequest?
     private var recognitionTask: SFSpeechRecognitionTask?
+    
     init() {
+        // Разрешения
         SFSpeechRecognizer.requestAuthorization { _ in }
         AVAudioSession.sharedInstance().requestRecordPermission { _ in }
     }
+    
+    // MARK: - Public
     
     func toggleRecording() {
         if audioEngine.isRunning {
@@ -30,16 +37,18 @@ final class SpeechRecognizer: ObservableObject {
             self.isRecording.toggle()
         }
     }
+    
     func startRecording() {
         recognitionTask?.cancel()
         recognitionTask = nil
         transcript = ""
+        
         let session = AVAudioSession.sharedInstance()
         try? session.setCategory(.record, mode: .measurement, options: .duckOthers)
         try? session.setActive(true, options: .notifyOthersOnDeactivation)
+        
         request = SFSpeechAudioBufferRecognitionRequest()
         request?.shouldReportPartialResults = true
-        
         
         recognitionTask = speechRecognizer?.recognitionTask(with: request!) { [weak self] result, error in
             guard let self = self else { return }
@@ -56,30 +65,21 @@ final class SpeechRecognizer: ObservableObject {
             }
         }
         
-       
         let inputNode = audioEngine.inputNode
         let format = inputNode.outputFormat(forBus: 0)
-        inputNode.installTap(onBus: 0, bufferSize: 1024, format: format) { buffer, _ in
-            self.request?.append(buffer)
+        inputNode.installTap(onBus: 0, bufferSize: 1024, format: format) { [weak self] buffer, _ in
+            self?.request?.append(buffer)
         }
         
         audioEngine.prepare()
         try? audioEngine.start()
-
     }
+    
     func stopRecording() {
-        
         audioEngine.stop()
         audioEngine.inputNode.removeTap(onBus: 0)
         request?.endAudio()
         recognitionTask?.cancel()
         try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
-            
     }
-}
-
-struct Article: Identifiable, Hashable {
-    let id: Int
-    let title: String
-    let icon: String
 }

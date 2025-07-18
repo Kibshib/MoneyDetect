@@ -1,13 +1,28 @@
 import UIKit
 
+/// Лёгкий popover-календарь. Показывается как шторка/попап из AnalysisViewController.
+/// ВАЖНО: В проекте должен существовать ТОЛЬКО ОДИН класс SimpleCalendarSheetViewController (этот файл).
 final class SimpleCalendarSheetViewController: UIViewController {
+
+    /// Выбранная дата будет передана по замыканию.
     var onDateSelected: ((Date) -> Void)?
+
+    /// Корневая вью календаря (UIKit-реализация — см. SimpleCalendarView.swift).
     private let calendarView = SimpleCalendarView()
+
+    /// Дата, которая будет выделена при показе.
     private let selected: Date
-    private let container = UIView()
+
+    /// Прямоугольник-«якорь», относительно которого позиционируем попап.
     private let anchorRect: CGRect
+
+    /// Тап по фону, чтобы закрыть.
     private let dismissView = UIView()
 
+    /// Контейнер попапа (скруглённая карточка).
+    private let container = UIView()
+
+    // MARK: - Init
     init(selected: Date, anchorRect: CGRect) {
         self.selected = selected
         self.anchorRect = anchorRect
@@ -15,8 +30,12 @@ final class SimpleCalendarSheetViewController: UIViewController {
         modalPresentationStyle = .overCurrentContext
         modalTransitionStyle = .crossDissolve
     }
-    required init?(coder: NSCoder) { fatalError() }
 
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .clear
@@ -24,6 +43,7 @@ final class SimpleCalendarSheetViewController: UIViewController {
         setupPopup()
     }
 
+    // MARK: - UI build
     private func setupDismissView() {
         dismissView.backgroundColor = .clear
         dismissView.translatesAutoresizingMaskIntoConstraints = false
@@ -43,6 +63,7 @@ final class SimpleCalendarSheetViewController: UIViewController {
     }
 
     private func setupPopup() {
+        // контейнер
         container.backgroundColor = .white
         container.layer.cornerRadius = 24
         container.layer.masksToBounds = false
@@ -51,30 +72,36 @@ final class SimpleCalendarSheetViewController: UIViewController {
         container.layer.shadowRadius = 24
         container.translatesAutoresizingMaskIntoConstraints = true
         view.addSubview(container)
+
+        // расчёт габаритов на основе количества недель в месяце
         let popupWidth: CGFloat = 340
         let cellHeight: CGFloat = 38
         let headerHeight: CGFloat = 32
         let daysOfWeekHeight: CGFloat = 24
         let verticalSpacing: CGFloat = 8 + 8
-     
+
         let calendar = Calendar.current
-        let closed = calendar.range(of: .day, in: .month, for: selected) ?? 1..<31
         let comps = calendar.dateComponents([.year, .month], from: selected)
         let firstOfMonth = calendar.date(from: comps) ?? selected
+        let daysInMonth = calendar.range(of: .day, in: .month, for: firstOfMonth)?.count ?? 30
         let firstWeekday = calendar.component(.weekday, from: firstOfMonth) - 1
-        let daysCount = Array(closed).count + max(firstWeekday, 0)
-        let numberOfRows = Int(ceil(Double(daysCount) / 7.0))
-        let popupHeight = headerHeight + daysOfWeekHeight + (CGFloat(numberOfRows) * cellHeight) + verticalSpacing + 16 + 16 
-        let screenBounds = UIScreen.main.bounds
+        let filledDays = daysInMonth + max(firstWeekday, 0)
+        let rows = Int(ceil(Double(filledDays) / 7.0))
+        let popupHeight = headerHeight + daysOfWeekHeight + CGFloat(rows) * cellHeight + verticalSpacing + 16 + 16
+
+        // позиционирование
+        let screen = UIScreen.main.bounds
+        let minX: CGFloat = 16
+        let maxX: CGFloat = screen.width - popupWidth - 16
         var x = anchorRect.midX - popupWidth / 2
-        let minX: CGFloat = 8
-        let maxX = screenBounds.width - popupWidth - 8
         if x < minX { x = minX }
         if x > maxX { x = maxX }
         var y = anchorRect.maxY + 8
-        let maxY = screenBounds.height - popupHeight - 8
+        let maxY = screen.height - popupHeight - 8
         if y > maxY { y = maxY }
         container.frame = CGRect(x: x, y: y, width: popupWidth, height: popupHeight)
+
+        // календарь
         calendarView.translatesAutoresizingMaskIntoConstraints = false
         container.addSubview(calendarView)
         NSLayoutConstraint.activate([
@@ -83,10 +110,12 @@ final class SimpleCalendarSheetViewController: UIViewController {
             calendarView.trailingAnchor.constraint(equalTo: container.trailingAnchor),
             calendarView.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -16)
         ])
+
         calendarView.selectedDate = selected
-        calendarView.onDateSelected = { [weak self] date in
-            self?.onDateSelected?(date)
-            self?.dismiss(animated: true)
+        calendarView.onDateSelected = { [weak self] (date: Date) in
+            guard let self else { return }
+            self.onDateSelected?(date)
+            self.dismiss(animated: true)
         }
     }
-} 
+}

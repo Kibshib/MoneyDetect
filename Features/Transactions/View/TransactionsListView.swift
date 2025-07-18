@@ -6,22 +6,22 @@ struct TransactionsListView: View {
     @StateObject private var vm = TransactionsViewModel()
     @State private var categories: [Int: Category] = [:]
 
-
     @State private var showCreator = false
     @State private var editingTx: Transaction?
- 
 
-    private let categoryService = CategoriesService.shared
+    private let categoryService = CotegoriesServise.shared
+    @EnvironmentObject private var accountService: BankAccountServise   // для валюты
 
     var body: some View {
         ZStack {
-            VStack(spacing: 0) {
+            VStack(alignment: .leading, spacing: 0) {
                 header
                 listView
             }
             .task { await reload() }
             .background(Color(.systemGroupedBackground))
 
+            // FAB "+"
             Button {
                 showCreator = true
             } label: {
@@ -37,22 +37,33 @@ struct TransactionsListView: View {
                    maxHeight: .infinity,
                    alignment: .bottomTrailing)
         }
-    
+
+        // Создание
         .sheet(isPresented: $showCreator) {
-    TransactionEditorView(mode: .create(direction: direction)) {
-        Task { await reload() }
-    }
-}
-.sheet(item: $editingTx) { tx in
-    TransactionEditorView(mode: .edit(transaction: tx,
-                                      direction: direction)) {
-        Task { await reload() }
-    }
-}
+            TransactionEditorView(mode: .create(direction: direction)) {
+                Task { await reload() }
+            }
+        }
+        // Редактирование
+        .sheet(item: $editingTx) { tx in
+            TransactionEditorView(mode: .edit(transaction: tx,
+                                              direction: direction)) {
+                Task { await reload() }
+            }
+        }
+        // Индикатор / Алерт
+        .overlayLoading(categoryService.isLoading || txService.isLoading)
+        .errorAlert(message: Binding(
+            get: { txService.errorMessage ?? categoryService.errorMessage },
+            set: { _ in
+                txService.errorMessage = nil
+                categoryService.errorMessage = nil
+            }
+        ))
+        .navigationBarHidden(true)
     }
 
-    // MARK: – Header (без изменений)
-
+    // MARK: – Header
     private var header: some View {
         VStack(alignment: .leading, spacing: 0) {
 
@@ -69,12 +80,9 @@ struct TransactionsListView: View {
                 .frame(maxWidth: .infinity,
                        alignment: .trailing)
                 .padding(.trailing, 16)
-
-
             }
 
-            Text(direction == .income ? "Доходы сегодня"
-                                      : "Расходы сегодня")
+            Text(direction == .income ? "Доходы сегодня" : "Расходы сегодня")
                 .font(.largeTitle.bold())
                 .frame(maxWidth: .infinity,
                        maxHeight: 44,
@@ -85,9 +93,10 @@ struct TransactionsListView: View {
                 .frame(height: 44)
                 .overlay(
                     HStack {
-                        Text("Всего")
+                        Text("Итого").foregroundColor(.black)
                         Spacer()
-                        Text(vm.total.formattedAmount).bold()
+                        Text(vm.total.formattedAmount)  // твой ext
+                            .bold()
                     }
                     .padding(.horizontal, 16)
                 )
@@ -97,8 +106,7 @@ struct TransactionsListView: View {
         .padding(.top, 8)
     }
 
- 
-
+    // MARK: – List
     private var listView: some View {
         List {
             Section(header:
@@ -117,37 +125,38 @@ struct TransactionsListView: View {
                                 .clipShape(
                                     RoundedCorner(corners: rowCorners(index: idx))
                                 )
+                                .padding(.horizontal , 16 )
                         )
-                        .onTapGesture {
-                            editingTx = tx
-                        }
+                        .contentShape(Rectangle())
+                        .onTapGesture { editingTx = tx }
                 }
             }
         }
         .listStyle(.plain)
-        .refreshable { await reload() }
-        .padding(.horizontal, 16)
+        .frame(maxWidth: .infinity)
     }
 
-    // MARK: – Данные
-
+    // MARK: – Reload
     private func reload() async {
-        async let _ = await loadCategories()
+        await loadCategories()            // <-- фикс: было `async let _ = ...`
         await vm.load(direction: direction)
     }
 
     private func loadCategories() async {
-        guard categories.isEmpty,
-              let cats = try? await categoryService.getAllCategories() else { return }
-        categories = Dictionary(uniqueKeysWithValues: cats.map { ($0.id, $0) })
+        if categories.isEmpty {
+            await categoryService.loadCategories()
+            categories = Dictionary(uniqueKeysWithValues: categoryService.categories.map { ($0.id, $0) })
+        }
     }
 
-    // MARK: – Скругление строк
-
+    // MARK: – Row corners
     private func rowCorners(index: Int) -> UIRectCorner {
         if vm.items.count == 1 { return .allCorners }
         if index == 0 { return [.topLeft, .topRight] }
         if index == vm.items.count - 1 { return [.bottomLeft, .bottomRight] }
         return []
     }
+
+    // MARK: – Shortcut to txService (для overlay / alert)
+    private var txService: TransactionServise { .shared }
 }
