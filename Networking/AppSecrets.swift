@@ -8,6 +8,5 @@
 import Foundation
 
 enum AppSecrets {
-    /// ВЫДАННЫЙ ТОКЕН — замени при необходимости
     static let bearerToken = "MbvOGEuRqYKbZcu8n3sM2QhH"
 }

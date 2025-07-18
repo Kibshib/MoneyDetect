@@ -64,8 +64,8 @@ final class BankAccountServise: ObservableObject {
     }
 
     // MARK: - Public: UPDATE / CREATE
-    /// Обновить существующий счёт на сервере (PUT /accounts/{id}).
-    /// Если id == 0 → создаём новый (POST /accounts) и сохраняем.
+    // Обновить существующий счёт на сервере (PUT /accounts/{id}).
+    //Если id == 0 → создаём новый (POST /accounts) и сохраняем.
     func updateAccount(newAccount: BankAccount) {
         Task {
             if newAccount.id == 0 {

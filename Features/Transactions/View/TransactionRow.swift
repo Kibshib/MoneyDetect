@@ -4,12 +4,12 @@ struct TransactionRow: View {
     let transaction: Transaction
     let category: Category?
 
-    // Back-compat инициализатор: позволяет вызывать TransactionRow(tx:category:)
+
     init(tx: Transaction, category: Category?) {
         self.transaction = tx
         self.category = category
     }
-    // Нормальный инициализатор (если где-то понадобится)
+
     init(transaction: Transaction, category: Category?) {
         self.transaction = transaction
         self.category = category
@@ -22,7 +22,7 @@ struct TransactionRow: View {
     var body: some View {
         HStack(spacing: 12) {
 
-            // Иконка категории
+
             ZStack {
                 Circle()
                     .fill(circleColor)
@@ -32,7 +32,7 @@ struct TransactionRow: View {
             }
             .padding(.leading, 16)
 
-            // Название + комментарий / дата
+
             VStack(alignment: .leading, spacing: 2) {
                 Text(category?.name ?? "Категория?")
                     .font(.system(size: 17))
@@ -43,7 +43,7 @@ struct TransactionRow: View {
 
             Spacer()
 
-            // Сумма
+
             Text(formattedAmount)
                 .font(.system(size: 17))
     
@@ -61,7 +61,7 @@ struct TransactionRow: View {
     }
 
     private var detailText: String {
-        // Показываем дату транзакции (коротко) или комментарий, как у тебя? Выбирай.
+    
         let comment = transaction.comment.trimmingCharacters(in: .whitespacesAndNewlines)
         if !comment.isEmpty { return comment }
         let df = DateFormatter()
@@ -70,8 +70,7 @@ struct TransactionRow: View {
     }
 
     private var formattedAmount: String {
-        // Предполагаю, что есть твой Decimal+Format расширение `formattedAmount`.
-        // Если нет — fallback:
+
         if let ext = transaction.amount.formattedAmountIfAvailable {
             return ext
         }
@@ -85,12 +84,9 @@ struct TransactionRow: View {
     }
 }
 
-// Маленький helper, чтобы не падать если нет расширения
 private extension Decimal {
     var formattedAmountIfAvailable: String? {
-        // если где-то в проекте есть extension var formattedAmount -> String,
-        // компилятор подберёт этот computed property через @available? Нет.
-        // Поэтому возвращаем nil, чтобы использовать fallback.
+
         nil
     }
 }

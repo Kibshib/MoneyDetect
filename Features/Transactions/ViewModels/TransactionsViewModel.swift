@@ -2,10 +2,7 @@
 //  TransactionsViewModel.swift
 //  MoneyDetector
 //
-//  ViewModel для экранов списка транзакций (Доходы / Расходы / История).
-//  Сохраняем твою API-логику: load(direction:), load(from:to:), loadAll(from:to:)
-//  Но источником данных теперь является TransactionServise (сеть).
-//
+
 
 import Foundation
 import SwiftUI
@@ -21,10 +18,10 @@ final class TransactionsViewModel: ObservableObject {
     private let catService  = CotegoriesServise.shared
     private var categories: [Int: Category] = [:]
     private var cancellable: AnyCancellable?
-    private var currentDirection: Direction = .income // default; обновим в load(direction:)
+    private var currentDirection: Direction = .income
 
     init() {
-        // Подписка: когда TransactionServise публикует транзакции → фильтруем под текущий direction
+   
         cancellable = txService.$transactions
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
@@ -33,9 +30,9 @@ final class TransactionsViewModel: ObservableObject {
             }
     }
 
-    // MARK: - Update items when сервис изменился
+
     private func updateItemsFromService() async {
-        let all = txService.transactions // уже текущий период, загруженный сервисом
+        let all = txService.transactions
         ensureCategoriesLoaded()
         items = all.filter { tx in
             if let cat = categories[tx.categoryId] {

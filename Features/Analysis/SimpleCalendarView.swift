@@ -2,13 +2,13 @@ import UIKit
 
 final class SimpleCalendarView: UIView {
 
-    // MARK: - Public
+
     var onDateSelected: ((Date) -> Void)?
     var selectedDate: Date = Date() {
         didSet { collectionView.reloadData(); updateMonthLabel() }
     }
 
-    // MARK: - Private
+
     private var calendar = Calendar.current
     private var currentMonth: Date
 
@@ -44,7 +44,7 @@ final class SimpleCalendarView: UIView {
         translatesAutoresizingMaskIntoConstraints = false
         calendar.locale = Locale(identifier: "ru_RU")
 
-        // --- HEADER ----------------------------------------------------------
+ 
         let header = UIView()
         header.translatesAutoresizingMaskIntoConstraints = false
         addSubview(header)
@@ -69,7 +69,7 @@ final class SimpleCalendarView: UIView {
         monthLabel.translatesAutoresizingMaskIntoConstraints = false
         nextButton.translatesAutoresizingMaskIntoConstraints = false
 
-        // --- DAYS OF WEEK ----------------------------------------------------
+
         daysStack.axis = .horizontal
         daysStack.alignment = .fill
         daysStack.distribution = .fillEqually
@@ -92,7 +92,7 @@ final class SimpleCalendarView: UIView {
             daysStack.addArrangedSubview(l)
         }
 
-        // --- COLLECTION ------------------------------------------------------
+ 
         collectionView.backgroundColor = .clear
         collectionView.dataSource = self
         collectionView.delegate   = self
@@ -100,9 +100,9 @@ final class SimpleCalendarView: UIView {
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(collectionView)
 
-        // Constraints
+
         NSLayoutConstraint.activate([
-            // header
+    
             header.topAnchor.constraint(equalTo: topAnchor),
             header.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 8),
             header.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -8),
@@ -123,12 +123,11 @@ final class SimpleCalendarView: UIView {
             monthLabel.leadingAnchor.constraint(greaterThanOrEqualTo: prevButton.trailingAnchor, constant: 4),
             monthLabel.trailingAnchor.constraint(lessThanOrEqualTo: nextButton.leadingAnchor, constant: -4),
 
-            // days stack
             daysStack.topAnchor.constraint(equalTo: header.bottomAnchor, constant: 8),
             daysStack.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
             daysStack.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
 
-            // collection
+
             collectionView.topAnchor.constraint(equalTo: daysStack.bottomAnchor, constant: 8),
             collectionView.leadingAnchor.constraint(equalTo: leadingAnchor),
             collectionView.trailingAnchor.constraint(equalTo: trailingAnchor),
@@ -139,7 +138,7 @@ final class SimpleCalendarView: UIView {
         updateMonthLabel()
     }
 
-    // MARK: - Month nav
+
     @objc private func prevMonth() {
         if let new = calendar.date(byAdding: .month, value: -1, to: currentMonth) {
             currentMonth = new
@@ -163,7 +162,7 @@ final class SimpleCalendarView: UIView {
         monthLabel.text = df.string(from: currentMonth).capitalized
     }
 
-    // MARK: - Helpers
+
     private func daysInCurrentMonth() -> Int {
         calendar.range(of: .day, in: .month, for: currentMonth)?.count ?? 30
     }
@@ -174,7 +173,6 @@ final class SimpleCalendarView: UIView {
     }
 }
 
-// MARK: - DataSource / Delegate
 extension SimpleCalendarView: UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
 
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
@@ -223,7 +221,7 @@ extension SimpleCalendarView: UICollectionViewDataSource, UICollectionViewDelega
     }
 }
 
-// MARK: - Cell
+
 private final class CalendarDayCell: UICollectionViewCell {
     private let label = UILabel()
 

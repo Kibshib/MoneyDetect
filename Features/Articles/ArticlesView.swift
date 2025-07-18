@@ -6,7 +6,7 @@
 import SwiftUI
 import Speech
 
-// MARK: – Строка списка
+
 private struct ArticleRow: View {
     let article: Article
     private var circleColor: Color { Color("AccentColor").opacity(0.15) }
@@ -29,7 +29,6 @@ private struct ArticleRow: View {
     }
 }
 
-// MARK: – Кастомный SearchBar
 private struct SearchBar: View {
     @Binding var text: String
     @FocusState private var focused: Bool
@@ -65,12 +64,12 @@ private struct SearchBar: View {
         .background(Color(uiColor: .systemGray5))
         .cornerRadius(10)
         .onTapGesture { focused = true }
-        // подставляем распознанный текст
+
         .onChange(of: recognizer.transcript) { text = $0 }
     }
 }
 
-// MARK: – Экран
+
 struct ArticlesView: View {
     @StateObject private var vm = ArticlesViewModel()
     @EnvironmentObject private var categoriesService: CotegoriesServise
@@ -78,7 +77,7 @@ struct ArticlesView: View {
     var body: some View {
         VStack(spacing: 10) {
 
-            // Заголовок
+
             Text("Мои статьи")
                 .font(.largeTitle.bold())
                 .frame(maxWidth: .infinity, maxHeight: 44, alignment: .leading)
@@ -122,7 +121,7 @@ struct ArticlesView: View {
         }
     }
 
-    // MARK: – углы
+
     private func rowCorners(_ art: Article) -> UIRectCorner {
         if vm.filtered.count == 1 { return .allCorners }
         if art.id == vm.filtered.first?.id   { return [.topLeft, .topRight] }

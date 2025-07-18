@@ -30,14 +30,14 @@ struct TransactionEditorView: View {
     private let accService = BankAccountServise.shared
 
     // MARK: – Локальное состояние
-    @State private var cats: [Category] = []          // локально отфильтрованные (по direction) категории
+    @State private var cats: [Category] = []
     @State private var selectedCategory: Category?
     @State private var amountText: String = ""
     @State private var date: Date         = Date()
     @State private var time: Date         = Date()
     @State private var comment: String    = ""
 
-    // UI state
+
     @Environment(\.dismiss) private var dismiss
     @State private var showCategoryPicker = false
     @State private var showAlert          = false
@@ -51,7 +51,6 @@ struct TransactionEditorView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
 
-                // Навбар-кнопки
                 HStack {
                     Button("Отмена") { close() }
                         .foregroundColor(Color("ForHistory"))
@@ -62,22 +61,20 @@ struct TransactionEditorView: View {
                 .padding(.horizontal)
                 .padding(.top, 16)
 
-                // Заголовок
+
                 Text(title)
                     .font(.largeTitle).bold()
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal)
                     .padding(.top, 8)
 
-                // Карточка полей
                 VStack(spacing: 0) {
                     VStack(spacing: 0) {
 
-                        // Статья
                         Button {
-                            // Открываем лист сразу
+ 
                             showCategoryPicker = true
-                            // Подгружаем при необходимости
+  
                             Task { await loadCategoriesIfNeeded() }
                         } label: {
                             HStack {
@@ -95,7 +92,6 @@ struct TransactionEditorView: View {
 
                         Divider().padding(.leading, 16)
 
-                        // Сумма
                         HStack {
                             Text("Сумма")
                             Spacer()
@@ -112,7 +108,7 @@ struct TransactionEditorView: View {
 
                         Divider().padding(.leading, 16)
 
-                        // Дата
+
                         HStack {
                             Text("Дата")
                             Spacer()
@@ -132,7 +128,7 @@ struct TransactionEditorView: View {
 
                         Divider().padding(.leading, 16)
 
-                        // Время
+ 
                         HStack {
                             Text("Время")
                             Spacer()
@@ -151,7 +147,7 @@ struct TransactionEditorView: View {
 
                         Divider().padding(.leading, 16)
 
-                        // Комментарий
+
                         ZStack(alignment: .topLeading) {
                             TextEditor(text: $comment)
                                 .frame(height: 44)
@@ -177,7 +173,7 @@ struct TransactionEditorView: View {
                 .padding(.top, 16)
                 .padding(.horizontal, 16)
 
-                // Destructive delete (только в edit)
+        
                 if case .edit(let tx, _) = mode {
                     Button(role: .destructive) {
                         Task {
@@ -213,14 +209,14 @@ struct TransactionEditorView: View {
             )
             .presentationDetents([.medium, .large])
         }
-        // при первом появлении — префетчим категории + инициализируем edit
+
         .task { await initData() }
     }
 
     // MARK: – Init data
     @MainActor
     private func initData() async {
-        await loadCategoriesIfNeeded()      // ← заранее грузим, чтобы лист не был пустым
+        await loadCategoriesIfNeeded()
         if case .edit(let tx, _) = mode {
             selectedCategory = cats.first { $0.id == tx.categoryId }
             amountText       = tx.amount.currencyString
@@ -230,15 +226,15 @@ struct TransactionEditorView: View {
         }
     }
 
-    /// Загрузить категории, если их ещё нет (учитывая direction).
+
     private func loadCategoriesIfNeeded() async {
-        // Если уже есть — ничего не делаем
+
         let haveCats = await MainActor.run { !self.cats.isEmpty }
         if haveCats { return }
 
-        // Убедимся, что глобальный сервис загружен
+ 
         if catService.categories.isEmpty {
-            await catService.loadCategories()   // это асинхронная сеть
+            await catService.loadCategories()
         }
 
         let filtered = catService.categories.filter {
@@ -247,7 +243,6 @@ struct TransactionEditorView: View {
 
         await MainActor.run {
             self.cats = filtered
-            // при создании можно автоселект первой категории
             if self.selectedCategory == nil, let first = filtered.first {
                 self.selectedCategory = first
             }
@@ -330,18 +325,18 @@ struct TransactionEditorView: View {
 
     // MARK: – Helpers
 
-    /// Форматируем сумму при завершении ввода
+
     private func formatAmount() {
         if let d = Decimal.from(string: amountText) {
             amountText = d.currencyString
         }
     }
 
-    /// Фильтрация ввода: оставляем цифры + локальный разделитель
+
     private func filtered(_ str: String) -> String {
         let sep = decimalSeparator
         var result = str.filter { $0.isWholeNumber || String($0) == sep }
-        // только один разделитель
+
         if result.split(separator: Character(sep)).count > 2 {
             result.removeLast()
         }
@@ -355,7 +350,7 @@ struct TransactionEditorView: View {
         return nf.decimalSeparator ?? ","
     }
 
-    /// Собираем дату и время в один Date
+
     private func composeDateAndTime(date: Date, time: Date) -> Date {
         let cal = Calendar.current
         let d = cal.dateComponents([.year,.month,.day], from: date)
@@ -374,7 +369,7 @@ struct TransactionEditorView: View {
 
 
 // MARK: – Category Picker Sheet
-/// Упрощено: спиннер показываем, пока массив категорий пуст.
+
 private struct CategoryPickerSheet: View {
     let categories: [Category]
     @Binding var selected: Category?

@@ -7,19 +7,6 @@
 
 import UIKit
 
-/// Экран «Анализ». Твой исходный дизайн сохранён, добавлены сетевые загрузки
-/// (BankAccountServise / CotegoriesServise / TransactionServise).
-///
-/// Что делает:
-///  - Период: дата начала / конца с выбором через popover-календарь.
-///  - Сумма: сумма всех транзакций в выбранном периоде (как в твоём исходнике).
-///  - Сегмент «Дата / Сумма»: локальная сортировка отображаемого списка.
-///  - Таблица операций: каждая строка = транзакция, категории берутся из сервиса.
-///  - Оверлей загрузки/ошибок реализован через activity + errorLabel.
-///
-/// Использование:
-///   let vc = AnalysisViewController()
-///   present(vc, animated: true)
 final class AnalysisViewController: UIViewController {
 
     // MARK: - UI
@@ -64,8 +51,8 @@ final class AnalysisViewController: UIViewController {
         setupUI()
         setupGestures()
         applyPeriodLabels()
-        loadCategories()  // подтянем категории
-        reloadData()      // первая загрузка транзакций
+        loadCategories()
+        reloadData()
     }
 
     // MARK: - UI SETUP (твой дизайн)
@@ -92,13 +79,13 @@ final class AnalysisViewController: UIViewController {
         backStack.addArrangedSubview(backButton)
         view.addSubview(backStack)
 
-        // TITLE
+   
         titleLabel.text = "Анализ"
         titleLabel.font = .systemFont(ofSize: 34, weight: .bold)
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(titleLabel)
 
-        // FILTER CARD
+  
         filterCard.backgroundColor = .white
         filterCard.layer.cornerRadius = 16
         filterCard.translatesAutoresizingMaskIntoConstraints = false
@@ -110,7 +97,7 @@ final class AnalysisViewController: UIViewController {
         filterStack.translatesAutoresizingMaskIntoConstraints = false
         filterCard.addSubview(filterStack)
 
-        // FROM ROW
+
         periodFromRow.axis = .horizontal
         periodFromRow.alignment = .center
         periodFromRow.spacing = 8
@@ -123,7 +110,7 @@ final class AnalysisViewController: UIViewController {
         periodFromRow.addArrangedSubview(UIView()) // spacer
         periodFromRow.addArrangedSubview(periodFromValue)
 
-        // TO ROW
+
         periodToRow.axis = .horizontal
         periodToRow.alignment = .center
         periodToRow.spacing = 8
@@ -136,13 +123,13 @@ final class AnalysisViewController: UIViewController {
         periodToRow.addArrangedSubview(UIView()) // spacer
         periodToRow.addArrangedSubview(periodToValue)
 
-        // SUM ROW
+
         sumRow.axis = .horizontal
         sumRow.alignment = .center
         sumRow.spacing = 8
         sumTitleLabel.text = "Сумма"
         sumTitleLabel.font = .systemFont(ofSize: 17)
-        sumValueLabel.font = .systemFont(ofSize: 17, weight: .regular) // <<< НЕ жирный
+        sumValueLabel.font = .systemFont(ofSize: 17, weight: .regular)
         sumValueLabel.textAlignment = .right
         sumValueLabel.adjustsFontSizeToFitWidth = false
         sumValueLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
@@ -151,23 +138,23 @@ final class AnalysisViewController: UIViewController {
         sumRow.addArrangedSubview(UIView()) // spacer
         sumRow.addArrangedSubview(sumValueLabel)
 
-        // SORT
+       
         sortControl.selectedSegmentIndex = 0
 
-        // STACK CONTENT
+     
         filterStack.addArrangedSubview(periodFromRow)
         filterStack.addArrangedSubview(periodToRow)
         filterStack.addArrangedSubview(sumRow)
         filterStack.addArrangedSubview(sortControl)
 
-        // SECTION
+     
         sectionLabel.text = "ОПЕРАЦИИ"
         sectionLabel.font = .systemFont(ofSize: 13, weight: .medium)
         sectionLabel.textColor = .secondaryLabel
         sectionLabel.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(sectionLabel)
 
-        // TABLE
+ 
         tableView.dataSource = self
         tableView.delegate   = self
         tableView.register(AnalysisOperationCell.self, forCellReuseIdentifier: "cell")
@@ -176,7 +163,7 @@ final class AnalysisViewController: UIViewController {
         tableView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(tableView)
 
-        // LOADER & ERROR
+
         activity.translatesAutoresizingMaskIntoConstraints = false
         errorLabel.translatesAutoresizingMaskIntoConstraints = false
         errorLabel.textColor = .systemRed
@@ -185,7 +172,7 @@ final class AnalysisViewController: UIViewController {
         view.addSubview(activity)
         view.addSubview(errorLabel)
 
-        // CONSTRAINTS
+
         NSLayoutConstraint.activate([
             backStack.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 8),
             backStack.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
@@ -219,7 +206,7 @@ final class AnalysisViewController: UIViewController {
         ])
     }
 
-    // MARK: - Gestures / Targets
+
     private func setupGestures() {
         let tapFrom = UITapGestureRecognizer(target: self, action: #selector(showFromCalendar))
         periodFromValue.isUserInteractionEnabled = true
@@ -232,7 +219,7 @@ final class AnalysisViewController: UIViewController {
         sortControl.addTarget(self, action: #selector(sortChanged), for: .valueChanged)
     }
 
-    // MARK: - Actions
+
     @objc private func backTapped() {
         dismiss(animated: true)
     }
@@ -262,7 +249,7 @@ final class AnalysisViewController: UIViewController {
         }
     }
 
-    // MARK: - Calendar sheet presentation
+
     private func presentCalendar(for selected: Date,
                                  sourceView: UIView,
                                  onPick: @escaping (Date) -> Void) {
@@ -272,7 +259,7 @@ final class AnalysisViewController: UIViewController {
         present(vc, animated: true)
     }
 
-    // MARK: - Period labels
+
     private func applyPeriodLabels() {
         periodFromValue.text = formattedMonth(dateFrom)
         periodToValue.text   = formattedMonth(dateTo)
@@ -285,7 +272,7 @@ final class AnalysisViewController: UIViewController {
         return df.string(from: date)
     }
 
-    // MARK: - Categories (network)
+
     func loadCategories(force: Bool = false) {
         Task {
             if force || categoriesService.categories.isEmpty {
@@ -298,7 +285,6 @@ final class AnalysisViewController: UIViewController {
         }
     }
 
-    // MARK: - Reload data (network)
     private func reloadData() {
         Task {
             await MainActor.run { self.setLoading(true, message: nil) }
@@ -326,7 +312,6 @@ final class AnalysisViewController: UIViewController {
                 self.transactions = sorted
                 self.totalSum     = total
 
-                // гарантированно НЕ жирный
                 self.sumValueLabel.attributedText = nil
                 self.sumValueLabel.text = self.totalSum.formattedAmount
                 self.sumValueLabel.font = .systemFont(ofSize: 17, weight: .regular)
@@ -338,7 +323,7 @@ final class AnalysisViewController: UIViewController {
         }
     }
 
-    // MARK: - Loading / Error UI
+
     @MainActor
     private func setLoading(_ loading: Bool, message: String?) {
         if loading {
@@ -351,7 +336,7 @@ final class AnalysisViewController: UIViewController {
     }
 }
 
-// MARK: - UITableViewDataSource / UITableViewDelegate
+
 extension AnalysisViewController: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         transactions.count
@@ -375,11 +360,11 @@ extension AnalysisViewController: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView,
                    didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        // По тапу можно открывать подробности / фильтрацию — оставляю на будущее.
+   
     }
 }
 
-// MARK: - Аналитическая ячейка
+
 final class AnalysisOperationCell: UITableViewCell {
     private let iconBackground = UIView()
     private let iconLabel     = UILabel()
@@ -487,7 +472,7 @@ final class AnalysisOperationCell: UITableViewCell {
     }
 }
 
-// MARK: - PaddedLabel (микро-отступы вокруг текста)
+
 final class PaddedLabel: UILabel {
     var textInsets = UIEdgeInsets(top: 4, left: 12, bottom: 4, right: 12)
     override func drawText(in rect: CGRect) {

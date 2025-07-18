@@ -149,7 +149,7 @@ struct AccountsView: View {
             .refreshable {
                 await vm.refresh()
             }
-            // Выбор валюты
+
             .confirmationDialog("Выберите валюту",
                                 isPresented: $showCurrencyDialog,
                                 titleVisibility: .visible) {
@@ -161,7 +161,7 @@ struct AccountsView: View {
                 Button("Отмена", role: .cancel) {}
             }
             .navigationBarHidden(true)
-            // Shake detector (скрыть/показать баланс)
+  
             .background(
                 ShakeDetector {
                     withAnimation(.easeInOut) {
@@ -171,13 +171,13 @@ struct AccountsView: View {
                 .allowsHitTesting(false)
             )
         }
-        // индикатор + алерт из сервиса
+
         .overlayLoading(vm.isLoadingFromService)
         .errorAlert(message: Binding(
             get: { vm.serviceError },
             set: { _ in vm.serviceError = nil }
         ))
-        // первая загрузка
+
         .task {
             await vm.load()
         }

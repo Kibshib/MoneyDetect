@@ -95,7 +95,7 @@ struct TransactionsListView: View {
                     HStack {
                         Text("Итого").foregroundColor(.black)
                         Spacer()
-                        Text(vm.total.formattedAmount)  // твой ext
+                        Text(vm.total.formattedAmount)
                             .bold()
                     }
                     .padding(.horizontal, 16)
@@ -138,7 +138,7 @@ struct TransactionsListView: View {
 
     // MARK: – Reload
     private func reload() async {
-        await loadCategories()            // <-- фикс: было `async let _ = ...`
+        await loadCategories()        
         await vm.load(direction: direction)
     }
 

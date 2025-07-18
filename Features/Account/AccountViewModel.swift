@@ -8,7 +8,7 @@ import CoreMotion
 
 @MainActor
 final class BankAccountViewModel: ObservableObject {
-    // Публичные данные для UI
+
     @Published var account = BankAccount(
         id: 0, userId: 0, name: "Мой счёт", balance: 0,
         currency: "RUB", createdAt: "", updatedAt: ""
@@ -21,19 +21,19 @@ final class BankAccountViewModel: ObservableObject {
 
     @Published var isBalanceHidden = false
 
-    // Ошибки/загрузка берём из сервиса (подпишемся)
+  
     @Published private(set) var isLoadingFromService = false
     @Published var serviceError: String?
 
-    // сервис
+
     private let service = BankAccountServise.shared
     private var cancellables: [AnyCancellable] = []
 
-    // Shake
+
     private let motionManager = CMMotionManager()
 
     init() {
-        // Подписки: когда сервис обновляет счёт → синк в локальную модель
+  
         service.$account
             .receive(on: DispatchQueue.main)
             .sink { [weak self] acc in
@@ -51,7 +51,7 @@ final class BankAccountViewModel: ObservableObject {
         startShakeDetection()
     }
 
-    // MARK: - Load / Refresh
+
 
     func load() async {
         if service.account == nil {
@@ -59,7 +59,7 @@ final class BankAccountViewModel: ObservableObject {
         } else {
             await service.refreshAccount()
         }
-        // локальные поля обновятся через sink
+
     }
 
     func refresh() async {
@@ -68,13 +68,13 @@ final class BankAccountViewModel: ObservableObject {
         isRefreshing = false
     }
 
-    // MARK: - Save (PUT /accounts)
+
     func save() {
         guard !isSaving else { return }
         isSaving = true
         let now = ISO8601DateFormatter().string(from: Date())
 
-        // Парсим Decimal из строки (только цифры)
+
         let dec = Decimal(string: balanceString.replacingOccurrences(of: ",", with: ".").filter { $0.isNumber || $0 == "." }) ?? 0
 
         let updated = BankAccount(
@@ -89,24 +89,23 @@ final class BankAccountViewModel: ObservableObject {
 
         service.updateAccount(newAccount: updated)
 
-        // Локально сразу обновим, чтобы UI отрисовался; сервис позже подтянет с сервера
+
         apply(account: updated)
 
-        // Сбрасываем saving через небольшую задержку (когда сервис успеет ответить)
         Task {
             try? await Task.sleep(nanoseconds: 400_000_000)
             await MainActor.run { self.isSaving = false }
         }
     }
 
-    // MARK: - Apply account → локальные поля
+
     private func apply(account acc: BankAccount) {
         self.account = acc
         self.balanceString = balanceToString(acc.balance)
         self.currency = Currency(rawValue: acc.currency) ?? .rub
     }
 
-    // MARK: helpers
+
 
     var formattedBalance: String {
         numberGroupString(from: account.balance)
@@ -116,7 +115,7 @@ final class BankAccountViewModel: ObservableObject {
         numberGroupString(from: value, noSeparatorsOk: true)
     }
 
-    /// Разбивка по тысячам пробелами
+
     private func numberGroupString(from value: Decimal, noSeparatorsOk: Bool = false) -> String {
         let num = NSDecimalNumber(decimal: value)
         let fmt = NumberFormatter()
@@ -129,7 +128,7 @@ final class BankAccountViewModel: ObservableObject {
         return s
     }
 
-    // MARK: Shake hide
+
     private func startShakeDetection() {
         guard motionManager.isAccelerometerAvailable else { return }
         motionManager.accelerometerUpdateInterval = 0.1

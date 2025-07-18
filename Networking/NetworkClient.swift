@@ -1,19 +1,7 @@
-//
-//  NetworkClient.swift
-//  SHMR Finance Client
-//
-//  Универсальный сетевой клиент под https://shmr-finance.ru/api/v1
-//  - async/await
-//  - generic Body: Encodable / Response: Decodable
-//  - перегрузка без body для GET
-//  - Bearer токен
-//  - фоновое encode/decode
-//  - обработка HTTP / API message / сериализационных ошибок
-//
 
 import Foundation
 
-// MARK: - Ошибки
+
 
 enum NetworkError: LocalizedError {
     case invalidURL(String)
@@ -39,7 +27,7 @@ enum NetworkError: LocalizedError {
     }
 }
 
-// MARK: - HTTP / Endpoint
+
 
 enum HTTPMethod: String { case get = "GET", post = "POST", put = "PUT", patch = "PATCH", delete = "DELETE" }
 
@@ -62,15 +50,15 @@ struct Endpoint {
     }
 }
 
-// MARK: - Пустое тело
+
 
 struct EmptyPayload: Codable { init() {} }
 
-// MARK: - API Error (сервер может вернуть message)
+
 
 private struct APIErrorResponse: Decodable { let message: String? }
 
-// MARK: - NetworkClient
+
 
 final class NetworkClient {
 
@@ -91,7 +79,7 @@ final class NetworkClient {
 
     func updateToken(_ new: String) { token = new }
 
-    // MARK: Convenience GET (без body)
+
     @discardableResult
     func request<Response: Decodable>(
         _ endpoint: Endpoint,
@@ -101,7 +89,6 @@ final class NetworkClient {
         return try await request(endpoint, body: noBody, responseType: responseType)
     }
 
-    // MARK: Generic основной
     @discardableResult
     func request<Response: Decodable, Body: Encodable>(
         _ endpoint: Endpoint,
@@ -141,7 +128,6 @@ final class NetworkClient {
         return try await decode(Response.self, from: data)
     }
 
-    // MARK: - Helpers
 
     private func buildURLRequest<Body: Encodable>(
         from endpoint: Endpoint,
