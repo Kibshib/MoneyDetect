@@ -14,7 +14,7 @@ final class BankAccountViewModel: ObservableObject {
 
     @Published var isBalanceHidden = false
 
-    private let service = BankAccountsService()
+    private let service = BankAccountsService.shared
     private let motionManager = CMMotionManager()
 
     init() {
