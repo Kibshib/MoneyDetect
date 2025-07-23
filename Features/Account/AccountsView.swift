@@ -1,3 +1,8 @@
+//
+//  AccountsView.swift
+//  MoneyDetector
+//
+
 import SwiftUI
 
 struct AccountsView: View {
@@ -10,6 +15,8 @@ struct AccountsView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
+
+                    // Кнопка редактирования / сохранения
                     HStack(spacing: 0) {
                         Spacer()
                         Button(inEdit ? "Сохранить" : "Редактировать") {
@@ -23,6 +30,7 @@ struct AccountsView: View {
                                 }
                             }
                         }
+                        .disabled(vm.isSaving || vm.isLoadingFromService)
                         .foregroundColor(Color("ForHistory"))
                         .frame(height: 44)
                         .padding(.trailing, 16)
@@ -34,6 +42,7 @@ struct AccountsView: View {
                         .frame(maxWidth: .infinity, maxHeight: 44, alignment: .leading)
                         .padding(.horizontal, 16)
 
+                    // Баланс
                     HStack {
                         Image("MoneyIcon")
                             .frame(width: 22, height: 22)
@@ -41,21 +50,22 @@ struct AccountsView: View {
                         Spacer()
 
                         if inEdit {
-                            TextField( "0", text: $vm.balanceString)
-                                .keyboardType(.numberPad)
+                            TextField("0", text: $vm.balanceString)
+                                .keyboardType(.decimalPad)
                                 .focused($isFocused)
-                                .onTapGesture { isFocused = true }
                                 .multilineTextAlignment(.trailing)
                                 .textFieldStyle(.plain)
                                 .accentColor(.purple)
                                 .frame(width: 120)
                                 .onChange(of: vm.balanceString) { newValue in
-                                    let filtered = newValue.filter { $0.isNumber }
+                                    // оставить только цифры и запятую/точку
+                                    let filtered = newValue.filter { $0.isNumber || $0 == "," || $0 == "." }
                                     if filtered != newValue {
                                         vm.balanceString = filtered
                                     }
                                 }
                         } else {
+                            // Отрисовка скрывающей шторки
                             let charCount = vm.formattedBalance.count + 1
                             let charWidth: CGFloat = 8
                             let padding: CGFloat = 16
@@ -63,7 +73,6 @@ struct AccountsView: View {
                             let spoilerHeight: CGFloat = 24
 
                             ZStack(alignment: .trailing) {
-                                // Text balance
                                 Text(vm.formattedBalance + " " + vm.currency.symbol)
                                     .bold()
                                     .foregroundColor(.black)
@@ -73,16 +82,13 @@ struct AccountsView: View {
 
                                 if vm.isBalanceHidden {
                                     Color("AccentColor").opacity(0.1)
-                                            .frame(width: spoilerWidth, height: 44)
-                                            .cornerRadius(16)
-
-                                        // Слой размытия
+                                        .frame(width: spoilerWidth, height: 44)
+                                        .cornerRadius(16)
                                     VisualEffectView(blurStyle: .systemUltraThinMaterial)
-                                            .frame(width: spoilerWidth, height: 24)
-                                            .cornerRadius(16)
-                                            .allowsHitTesting(false)
+                                        .frame(width: spoilerWidth, height: spoilerHeight)
+                                        .cornerRadius(16)
+                                        .allowsHitTesting(false)
                                 }
-
 
                                 SpoilerViewRepresentable(
                                     isHidden: $vm.isBalanceHidden,
@@ -104,6 +110,7 @@ struct AccountsView: View {
                     .padding(.top, 16)
                     .padding(.horizontal, 16)
 
+                    // Валюта
                     HStack {
                         Text("Валюта")
                         Spacer()
@@ -131,28 +138,30 @@ struct AccountsView: View {
                     .cornerRadius(16)
                     .padding(.top, 16)
                     .padding(.horizontal, 16)
+
                     Spacer(minLength: 20)
-                    
                 }
                 .hideKeyboardOnTap()
             }
             .background(Color(.systemGroupedBackground))
             .ignoresSafeArea(edges: .bottom)
+            // Pull to refresh
             .refreshable {
                 await vm.refresh()
             }
+
             .confirmationDialog("Выберите валюту",
                                 isPresented: $showCurrencyDialog,
                                 titleVisibility: .visible) {
-                ForEach(Currency.allCases) { cur in
-                    Button(cur.title) {
-                        if cur != vm.currency {
-                            vm.currency = cur
-                        }
+                ForEach(Currency.allCases, id: \.self) { cur in
+                    Button(cur.symbol) {
+                        vm.currency = cur
                     }
                 }
+                Button("Отмена", role: .cancel) {}
             }
             .navigationBarHidden(true)
+  
             .background(
                 ShakeDetector {
                     withAnimation(.easeInOut) {
@@ -161,6 +170,16 @@ struct AccountsView: View {
                 }
                 .allowsHitTesting(false)
             )
+        }
+
+        .overlayLoading(vm.isLoadingFromService)
+        .errorAlert(message: Binding(
+            get: { vm.serviceError },
+            set: { _ in vm.serviceError = nil }
+        ))
+
+        .task {
+            await vm.load()
         }
     }
 }
