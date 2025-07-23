@@ -34,6 +34,7 @@ struct HistoryView: View {
     @State private var sortKind: SortKind = .date
 
     @State private var editingTx: Transaction? = nil
+    // Удалён флаг didAppear
 
     var body: some View {
         NavigationStack {
@@ -83,7 +84,9 @@ struct HistoryView: View {
             .background(Color(.systemGroupedBackground))
 
 
-            .onAppear  { Task { await initialLoad() } }
+            .onAppear {
+                Task { await initialLoad() }
+            }
 
 
             .onChange(of: dateFrom) { newVal in

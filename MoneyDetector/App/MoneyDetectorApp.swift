@@ -2,10 +2,14 @@
 
 import SwiftUI
 @main
-struct MoneyDetectorApp: App {
+struct MyApp: App {
+    @State private var showSplash = true 
+
     var body: some Scene {
         WindowGroup {
-            RootTabView()            
+            SplashScreenView(isActive: $showSplash) {
+                RootTabView()
+            }
         }
     }
 }

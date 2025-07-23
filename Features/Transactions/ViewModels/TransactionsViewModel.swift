@@ -34,16 +34,15 @@ final class TransactionsViewModel: ObservableObject {
     private func updateItemsFromService() async {
         let all = txService.transactions
         ensureCategoriesLoaded()
+        let (start, end) = todayRange
         items = all.filter { tx in
-            if let cat = categories[tx.categoryId] {
-                return currentDirection == .income ? cat.isIncome : !cat.isIncome
-            }
-            return false
+            tx.transactionDate >= start && tx.transactionDate < end &&
+            (categories[tx.categoryId].map { currentDirection == .income ? $0.isIncome : !$0.isIncome } ?? false)
         }
         total = items.reduce(0) { $0 + $1.amount }
     }
 
-    // MARK: - Load «сегодня» под направление
+
     func load(direction: Direction) async {
         currentDirection = direction
         ensureCategoriesLoaded()
@@ -52,18 +51,17 @@ final class TransactionsViewModel: ObservableObject {
         await updateItemsFromService()
     }
 
-    // MARK: - Load интервал c фильтром direction (исп. в History/Date-период)
     func load(from: Date, to: Date, direction: Direction) async {
         currentDirection = direction
         await loadInterval(start: from, end: to, keepFilter: direction)
     }
 
-    // MARK: - Load интервал без смены фильтра (история)
+
     func load(from: Date, to: Date) async {
         await loadInterval(start: from, end: to, keepFilter: currentDirection)
     }
 
-    // MARK: - Load «всё» (история — без фильтрации по direction)
+ 
     func loadAll(from: Date, to: Date) async {
         ensureCategoriesLoaded()
         await txService.loadTransactions(startDate: from, endDate: to)
@@ -71,7 +69,7 @@ final class TransactionsViewModel: ObservableObject {
         total = items.reduce(0) { $0 + $1.amount }
     }
 
-    // MARK: - CRUD прокси (используются Editor'ом через vm в листе)
+
     func add(categoryId: Int, amount: Decimal, date: Date, comment: String?) async {
         await txService.createTransaction(categoryId: categoryId, amount: amount, date: date, comment: comment)
         await updateItemsFromService()

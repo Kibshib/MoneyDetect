@@ -48,6 +48,7 @@ struct RootTabView: View {
             // Статьи
             NavigationStack {
                 ArticlesView()
+                    .environmentObject(CotegoriesServise.shared)
             }
             .tabItem {
                 Image("ic_articles").renderingMode(.template)

@@ -2,20 +2,21 @@
 //  AnalysisViewController.swift
 //  MoneyDetector
 //
-//  Экран «Анализ» с сетевой загрузкой и исходным визуальным дизайном.
+//  Экран «Анализ» с сетевой загрузкой и встроенной круговой диаграммой.
 //
-
+import PieChart
 import UIKit
 
 final class AnalysisViewController: UIViewController {
 
-    // MARK: - UI
-    private let backButton    = UIButton(type: .system)
-    private let titleLabel    = UILabel()
-    private let filterCard    = UIView()
-    private let filterStack   = UIStackView()
-    private let periodFromRow = UIStackView()
-    private let periodToRow   = UIStackView()
+
+    private let pieChartView   = PieChartView()
+    private let backButton     = UIButton(type: .system)
+    private let titleLabel     = UILabel()
+    private let filterCard     = UIView()
+    private let filterStack    = UIStackView()
+    private let periodFromRow  = UIStackView()
+    private let periodToRow    = UIStackView()
     private let periodFromLabel = UILabel()
     private let periodToLabel   = UILabel()
     private let periodFromValue = PaddedLabel()
@@ -29,12 +30,11 @@ final class AnalysisViewController: UIViewController {
     private let activity        = UIActivityIndicatorView(style: .medium)
     private let errorLabel      = UILabel()
 
-    // MARK: - Services (network)
+
     private let accountService    = BankAccountServise.shared
     private let categoriesService = CotegoriesServise.shared
     private let txService         = TransactionServise.shared
 
-    // MARK: - Data
     private var transactions: [Transaction] = []
     private var categories:   [Int: Category] = [:]
     private var sortKind: SortKind = .date
@@ -44,10 +44,10 @@ final class AnalysisViewController: UIViewController {
 
     enum SortKind { case date, amount }
 
-    // MARK: - Lifecycle
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = UIColor.systemGroupedBackground
+        view.backgroundColor = .systemGroupedBackground
         setupUI()
         setupGestures()
         applyPeriodLabels()
@@ -55,15 +55,13 @@ final class AnalysisViewController: UIViewController {
         reloadData()
     }
 
-    // MARK: - UI SETUP (твой дизайн)
-    private func setupUI() {
+        private func setupUI() {
         // BACK
         let backStack = UIStackView()
         backStack.axis = .horizontal
         backStack.spacing = 2
         backStack.alignment = .center
         backStack.translatesAutoresizingMaskIntoConstraints = false
-
         let backChevron = UIImageView(image: UIImage(systemName: "chevron.left"))
         backChevron.tintColor = UIColor(named: "ForHistory") ?? .systemPurple
         backChevron.contentMode = .scaleAspectFit
@@ -79,13 +77,11 @@ final class AnalysisViewController: UIViewController {
         backStack.addArrangedSubview(backButton)
         view.addSubview(backStack)
 
-   
         titleLabel.text = "Анализ"
         titleLabel.font = .systemFont(ofSize: 34, weight: .bold)
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(titleLabel)
 
-  
         filterCard.backgroundColor = .white
         filterCard.layer.cornerRadius = 16
         filterCard.translatesAutoresizingMaskIntoConstraints = false
@@ -97,32 +93,29 @@ final class AnalysisViewController: UIViewController {
         filterStack.translatesAutoresizingMaskIntoConstraints = false
         filterCard.addSubview(filterStack)
 
-
         periodFromRow.axis = .horizontal
         periodFromRow.alignment = .center
         periodFromRow.spacing = 8
         periodFromLabel.text = "Начало"
         periodFromLabel.font = .systemFont(ofSize: 17)
-        periodFromValue.backgroundColor = UIColor(named: "AccentColorWithOpacity") ?? UIColor.systemGray5
+        periodFromValue.backgroundColor = UIColor(named: "AccentColorWithOpacity") ?? .systemGray5
         periodFromValue.layer.cornerRadius = 8
         periodFromValue.clipsToBounds = true
         periodFromRow.addArrangedSubview(periodFromLabel)
-        periodFromRow.addArrangedSubview(UIView()) // spacer
+        periodFromRow.addArrangedSubview(UIView())
         periodFromRow.addArrangedSubview(periodFromValue)
-
 
         periodToRow.axis = .horizontal
         periodToRow.alignment = .center
         periodToRow.spacing = 8
         periodToLabel.text = "Конец"
         periodToLabel.font = .systemFont(ofSize: 17)
-        periodToValue.backgroundColor = UIColor(named: "AccentColorWithOpacity") ?? UIColor.systemGray5
+        periodToValue.backgroundColor = UIColor(named: "AccentColorWithOpacity") ?? .systemGray5
         periodToValue.layer.cornerRadius = 8
         periodToValue.clipsToBounds = true
         periodToRow.addArrangedSubview(periodToLabel)
-        periodToRow.addArrangedSubview(UIView()) // spacer
+        periodToRow.addArrangedSubview(UIView())
         periodToRow.addArrangedSubview(periodToValue)
-
 
         sumRow.axis = .horizontal
         sumRow.alignment = .center
@@ -131,38 +124,33 @@ final class AnalysisViewController: UIViewController {
         sumTitleLabel.font = .systemFont(ofSize: 17)
         sumValueLabel.font = .systemFont(ofSize: 17, weight: .regular)
         sumValueLabel.textAlignment = .right
-        sumValueLabel.adjustsFontSizeToFitWidth = false
-        sumValueLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
-        sumValueLabel.setContentHuggingPriority(.required, for: .horizontal)
         sumRow.addArrangedSubview(sumTitleLabel)
-        sumRow.addArrangedSubview(UIView()) // spacer
+        sumRow.addArrangedSubview(UIView())
         sumRow.addArrangedSubview(sumValueLabel)
 
-       
         sortControl.selectedSegmentIndex = 0
 
-     
         filterStack.addArrangedSubview(periodFromRow)
         filterStack.addArrangedSubview(periodToRow)
         filterStack.addArrangedSubview(sumRow)
         filterStack.addArrangedSubview(sortControl)
 
-     
+        pieChartView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(pieChartView)
+
         sectionLabel.text = "ОПЕРАЦИИ"
         sectionLabel.font = .systemFont(ofSize: 13, weight: .medium)
         sectionLabel.textColor = .secondaryLabel
         sectionLabel.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(sectionLabel)
 
- 
         tableView.dataSource = self
-        tableView.delegate   = self
+        tableView.delegate = self
         tableView.register(AnalysisOperationCell.self, forCellReuseIdentifier: "cell")
         tableView.backgroundColor = .clear
-        tableView.separatorStyle  = .none
+        tableView.separatorStyle = .none
         tableView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(tableView)
-
 
         activity.translatesAutoresizingMaskIntoConstraints = false
         errorLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -171,7 +159,6 @@ final class AnalysisViewController: UIViewController {
         errorLabel.textAlignment = .center
         view.addSubview(activity)
         view.addSubview(errorLabel)
-
 
         NSLayoutConstraint.activate([
             backStack.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 8),
@@ -189,7 +176,12 @@ final class AnalysisViewController: UIViewController {
             filterStack.trailingAnchor.constraint(equalTo: filterCard.trailingAnchor, constant: -16),
             filterStack.bottomAnchor.constraint(equalTo: filterCard.bottomAnchor, constant: -10),
 
-            sectionLabel.topAnchor.constraint(equalTo: filterCard.bottomAnchor, constant: 16),
+            pieChartView.topAnchor.constraint(equalTo: filterCard.bottomAnchor, constant: 12),
+            pieChartView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            pieChartView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            pieChartView.heightAnchor.constraint(equalToConstant: 200),
+
+            sectionLabel.topAnchor.constraint(equalTo: pieChartView.bottomAnchor, constant: 16),
             sectionLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
 
             tableView.topAnchor.constraint(equalTo: sectionLabel.bottomAnchor, constant: 8),
@@ -200,32 +192,24 @@ final class AnalysisViewController: UIViewController {
             activity.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             activity.centerYAnchor.constraint(equalTo: view.centerYAnchor),
 
-            errorLabel.topAnchor.constraint(equalTo: filterCard.bottomAnchor, constant: 8),
+            errorLabel.topAnchor.constraint(equalTo: pieChartView.bottomAnchor, constant: 8),
             errorLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             errorLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
         ])
     }
 
-
     private func setupGestures() {
-        let tapFrom = UITapGestureRecognizer(target: self, action: #selector(showFromCalendar))
         periodFromValue.isUserInteractionEnabled = true
-        periodFromValue.addGestureRecognizer(tapFrom)
-
-        let tapTo = UITapGestureRecognizer(target: self, action: #selector(showToCalendar))
+        periodFromValue.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(showFromCalendar)))
         periodToValue.isUserInteractionEnabled = true
-        periodToValue.addGestureRecognizer(tapTo)
-
+        periodToValue.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(showToCalendar)))
         sortControl.addTarget(self, action: #selector(sortChanged), for: .valueChanged)
     }
 
-
-    @objc private func backTapped() {
-        dismiss(animated: true)
-    }
+    @objc private func backTapped() { dismiss(animated: true) }
 
     @objc private func sortChanged() {
-        sortKind = (sortControl.selectedSegmentIndex == 0) ? .date : .amount
+        sortKind = sortControl.selectedSegmentIndex == 0 ? .date : .amount
         reloadData()
     }
 
@@ -249,16 +233,12 @@ final class AnalysisViewController: UIViewController {
         }
     }
 
-
-    private func presentCalendar(for selected: Date,
-                                 sourceView: UIView,
-                                 onPick: @escaping (Date) -> Void) {
+    private func presentCalendar(for selected: Date, sourceView: UIView, onPick: @escaping (Date) -> Void) {
         let anchor = sourceView.convert(sourceView.bounds, to: view)
         let vc = SimpleCalendarSheetViewController(selected: selected, anchorRect: anchor)
         vc.onDateSelected = onPick
         present(vc, animated: true)
     }
-
 
     private func applyPeriodLabels() {
         periodFromValue.text = formattedMonth(dateFrom)
@@ -271,7 +251,6 @@ final class AnalysisViewController: UIViewController {
         df.dateFormat = "dd MMMM"
         return df.string(from: date)
     }
-
 
     func loadCategories(force: Bool = false) {
         Task {
@@ -289,19 +268,17 @@ final class AnalysisViewController: UIViewController {
         Task {
             await MainActor.run { self.setLoading(true, message: nil) }
 
-            if accountService.account == nil {
-                await accountService.loadMainAccount()
-            }
+            if accountService.account == nil { await accountService.loadMainAccount() }
             guard accountService.account != nil else {
                 await MainActor.run { self.setLoading(false, message: "Счёт не найден.") }
                 return
             }
 
-            await txService.loadTransactions(startDate: self.dateFrom, endDate: self.dateTo)
+            await txService.loadTransactions(startDate: dateFrom, endDate: dateTo)
             let txs = txService.transactions
 
             let sorted: [Transaction]
-            switch self.sortKind {
+            switch sortKind {
             case .date:   sorted = txs.sorted { $0.transactionDate > $1.transactionDate }
             case .amount: sorted = txs.sorted { $0.amount > $1.amount }
             }
@@ -311,56 +288,49 @@ final class AnalysisViewController: UIViewController {
             await MainActor.run {
                 self.transactions = sorted
                 self.totalSum     = total
-
-                self.sumValueLabel.attributedText = nil
-                self.sumValueLabel.text = self.totalSum.formattedAmount
-                self.sumValueLabel.font = .systemFont(ofSize: 17, weight: .regular)
-
-                self.errorLabel.text    = nil
+                self.sumValueLabel.text = total.formattedAmount
                 self.tableView.reloadData()
                 self.setLoading(false, message: nil)
+                self.updatePieChart()
             }
         }
     }
 
+    private func updatePieChart() {
+        let grouped = Dictionary(grouping: transactions, by: { $0.categoryId })
+        let entities = grouped.compactMap { (catId, items) -> Entity? in
+            guard let cat = categories[catId] else { return nil }
+            let sum = items.reduce(Decimal.zero) { $0 + $1.amount }
+            return Entity(value: sum, label: cat.name)
+        }
+
+        pieChartView.animateTransition(to: entities)
+    }
 
     @MainActor
     private func setLoading(_ loading: Bool, message: String?) {
-        if loading {
-            activity.startAnimating()
-            errorLabel.text = nil
-        } else {
-            activity.stopAnimating()
-            errorLabel.text = message
-        }
+        loading ? activity.startAnimating() : activity.stopAnimating()
+        errorLabel.text = message
     }
 }
 
 
 extension AnalysisViewController: UITableViewDataSource, UITableViewDelegate {
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        transactions.count
-    }
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int { transactions.count }
 
-    func tableView(_ tableView: UITableView,
-                   cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let tx = transactions[indexPath.row]
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath) as! AnalysisOperationCell
         let cat = categories[tx.categoryId]
         let total = (totalSum as NSDecimalNumber).doubleValue
-        let percent = total > 0
-            ? (tx.amount as NSDecimalNumber).doubleValue / total * 100.0
-            : 0
-        let isTop = indexPath.row == 0
-        let isBottom = indexPath.row == transactions.count - 1
-        cell.configure(with: tx, category: cat, percent: percent, isTop: isTop, isBottom: isBottom)
+        let percent = total > 0 ? (tx.amount as NSDecimalNumber).doubleValue / total * 100 : 0
+        cell.configure(with: tx, category: cat, percent: percent,
+                       isTop: indexPath.row == 0, isBottom: indexPath.row == transactions.count - 1)
         return cell
     }
 
-    func tableView(_ tableView: UITableView,
-                   didSelectRowAt indexPath: IndexPath) {
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-   
     }
 }
 
@@ -431,7 +401,7 @@ final class AnalysisOperationCell: UITableViewCell {
         stack.translatesAutoresizingMaskIntoConstraints = false
         stack.addArrangedSubview(iconBackground)
         stack.addArrangedSubview(textStack)
-        stack.addArrangedSubview(UIView()) // spacer
+        stack.addArrangedSubview(UIView()) 
         stack.addArrangedSubview(amountStack)
         stack.addArrangedSubview(chevron)
 
@@ -469,19 +439,5 @@ final class AnalysisOperationCell: UITableViewCell {
                 contentView.layer.maskedCorners = masked
             }
         }
-    }
-}
-
-
-final class PaddedLabel: UILabel {
-    var textInsets = UIEdgeInsets(top: 4, left: 12, bottom: 4, right: 12)
-    override func drawText(in rect: CGRect) {
-        super.drawText(in: rect.inset(by: textInsets))
-    }
-    override var intrinsicContentSize: CGSize {
-        var s = super.intrinsicContentSize
-        s.width  += textInsets.left + textInsets.right
-        s.height += textInsets.top  + textInsets.bottom
-        return s
     }
 }

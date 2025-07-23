@@ -119,6 +119,13 @@ final class BankAccountServise: ObservableObject {
             self.errorMessage = error.localizedDescription
         }
     }
+
+    func loadAccountHistory(accountID: Int) async throws -> AccountHistoryResponseDTO {
+        try await client.request(
+            Endpoint(path: "/accounts/\(accountID)/history"),
+            responseType: AccountHistoryResponseDTO.self
+        )
+    }
 }
 
 // MARK: - API decode DTO
@@ -174,3 +181,5 @@ private func decimalString(_ value: Decimal) -> String {
     nf.maximumFractionDigits = 2
     return nf.string(for: value as NSDecimalNumber) ?? "\(value)"
 }
+// MARK: - История счёта (balance timeline)
+

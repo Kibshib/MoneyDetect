@@ -1,85 +1,71 @@
-//
-//  SpeechRecognizer.swift
-//  MoneyDetector
-//
-//  Created by mac on 28.06.2025.
-//
-
-import SwiftUI
-import Combine
 import Speech
 import AVFoundation
 
+@MainActor
 final class SpeechRecognizer: ObservableObject {
     @Published var transcript: String = ""
     @Published var isRecording: Bool = false
-    
-    private let speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: "ru-RU"))
+
+    private let recognizer = SFSpeechRecognizer(locale: Locale(identifier: "ru-RU"))
     private let audioEngine = AVAudioEngine()
     private var request: SFSpeechAudioBufferRecognitionRequest?
-    private var recognitionTask: SFSpeechRecognitionTask?
-    
+    private var task: SFSpeechRecognitionTask?
+
     init() {
-        // Разрешения
         SFSpeechRecognizer.requestAuthorization { _ in }
         AVAudioSession.sharedInstance().requestRecordPermission { _ in }
     }
-    
-    // MARK: - Public
-    
+
     func toggleRecording() {
-        if audioEngine.isRunning {
-            stopRecording()
-        } else {
-            startRecording()
-        }
-        DispatchQueue.main.async {
-            self.isRecording.toggle()
-        }
+        isRecording ? stopRecording() : startRecording()
     }
-    
+
     func startRecording() {
-        recognitionTask?.cancel()
-        recognitionTask = nil
+        guard !audioEngine.isRunning else { return }
+
+        task?.cancel()
+        task = nil
         transcript = ""
-        
+
         let session = AVAudioSession.sharedInstance()
         try? session.setCategory(.record, mode: .measurement, options: .duckOthers)
         try? session.setActive(true, options: .notifyOthersOnDeactivation)
+
+        let req = SFSpeechAudioBufferRecognitionRequest()
+        req.shouldReportPartialResults = true
+        request = req
+
+        task = recognizer?.recognitionTask(with: req) { [weak self] result, error in
+            guard let self else { return }
+            if let r = result {
         
-        request = SFSpeechAudioBufferRecognitionRequest()
-        request?.shouldReportPartialResults = true
-        
-        recognitionTask = speechRecognizer?.recognitionTask(with: request!) { [weak self] result, error in
-            guard let self = self else { return }
-            if let result = result {
-                DispatchQueue.main.async {
-                    self.transcript = result.bestTranscription.formattedString
-                }
+                self.transcript = r.bestTranscription.formattedString
             }
-            if error != nil || result?.isFinal == true {
+            if error != nil || (result?.isFinal ?? false) {
                 self.stopRecording()
-                DispatchQueue.main.async {
-                    self.isRecording = false
-                }
             }
         }
-        
-        let inputNode = audioEngine.inputNode
-        let format = inputNode.outputFormat(forBus: 0)
-        inputNode.installTap(onBus: 0, bufferSize: 1024, format: format) { [weak self] buffer, _ in
+
+        let input = audioEngine.inputNode
+        let format = input.outputFormat(forBus: 0)
+        input.removeTap(onBus: 0)
+        input.installTap(onBus: 0, bufferSize: 1024, format: format) { [weak self] buffer, _ in
             self?.request?.append(buffer)
         }
-        
+
         audioEngine.prepare()
         try? audioEngine.start()
+        isRecording = true
     }
-    
+
     func stopRecording() {
         audioEngine.stop()
         audioEngine.inputNode.removeTap(onBus: 0)
         request?.endAudio()
-        recognitionTask?.cancel()
-        try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+        task?.cancel()
+        task = nil
+        try? AVAudioSession.sharedInstance()
+            .setActive(false, options: .notifyOthersOnDeactivation)
+        isRecording = false
     }
 }

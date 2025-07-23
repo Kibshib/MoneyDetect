@@ -25,7 +25,12 @@ final class TransactionServise: ObservableObject {
         }
         await loadTransactions(accountId: accountId, startDate: startDate, endDate: endDate)
     }
-
+    func loadAll() async {
+        let calendar = Calendar(identifier: .gregorian)
+        let endDate = Date()
+        let startDate = calendar.date(byAdding: .day, value: -30, to: endDate)!
+        await loadTransactions(startDate: startDate, endDate: endDate)
+    }
     private func loadTransactions(accountId: Int, startDate: Date?, endDate: Date?) async {
         isLoading = true; errorMessage = nil
         defer { isLoading = false }
@@ -71,7 +76,8 @@ final class TransactionServise: ObservableObject {
                 transactions.append(t)
                 sortTransactions()
             }
-            await accountService.refreshAccount() // баланс изменился
+            await accountService.refreshAccount()
+            await loadAll() // <--- ДОБАВЛЕНО
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -108,6 +114,7 @@ final class TransactionServise: ObservableObject {
                 sortTransactions()
             }
             await accountService.refreshAccount()
+            await loadAll() // <--- ДОБАВЛЕНО
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -125,6 +132,7 @@ final class TransactionServise: ObservableObject {
             )
             transactions.removeAll { $0.id == id }
             await accountService.refreshAccount()
+            await loadAll() // <--- ДОБАВЛЕНО
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -201,12 +209,12 @@ private func decimalString(_ value: Decimal) -> String {
 }
 
 private func isoString(_ date: Date) -> String {
-    ISO8601DateFormatter.apiMs.string(from: date)
+    makeISO8601ApiMsFormatter().string(from: date)
 }
 
 private func isoDate(_ string: String?) -> Date? {
     guard let s = string else { return nil }
-    return ISO8601DateFormatter.apiMs.date(from: s)
+    return makeISO8601ApiMsFormatter().date(from: s)
         ?? ISO8601DateFormatter().date(from: s)
 }
 
@@ -219,11 +227,9 @@ private func ymdString(_ date: Date) -> String {
     return df.string(from: date)
 }
 
-private extension ISO8601DateFormatter {
-    static let apiMs: ISO8601DateFormatter = {
-        let f = ISO8601DateFormatter()
-        f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        f.timeZone = TimeZone(secondsFromGMT: 0)
-        return f
-    }()
+private func makeISO8601ApiMsFormatter() -> ISO8601DateFormatter {
+    let f = ISO8601DateFormatter()
+    f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+    f.timeZone = TimeZone(secondsFromGMT: 0)
+    return f
 }

@@ -1,12 +1,7 @@
-//
-//  AccountsView.swift
-//  MoneyDetector
-//
-
 import SwiftUI
 
 struct AccountsView: View {
-    @StateObject private var vm = BankAccountViewModel()
+    @StateObject private var vm = AccountViewModel()
     @State private var inEdit = false
     @FocusState private var isFocused: Bool
     @State private var showCurrencyDialog = false
@@ -15,16 +10,17 @@ struct AccountsView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
-
-                    // Кнопка редактирования / сохранения
+           
                     HStack(spacing: 0) {
                         Spacer()
                         Button(inEdit ? "Сохранить" : "Редактировать") {
                             if inEdit {
                                 vm.save()
                                 inEdit = false
+                                vm.isEditing = false
                             } else {
                                 inEdit = true
+                                vm.isEditing = true
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                                     isFocused = true
                                 }
@@ -42,13 +38,11 @@ struct AccountsView: View {
                         .frame(maxWidth: .infinity, maxHeight: 44, alignment: .leading)
                         .padding(.horizontal, 16)
 
-                    // Баланс
                     HStack {
                         Image("MoneyIcon")
                             .frame(width: 22, height: 22)
                         Text("Баланс")
                         Spacer()
-
                         if inEdit {
                             TextField("0", text: $vm.balanceString)
                                 .keyboardType(.decimalPad)
@@ -58,20 +52,17 @@ struct AccountsView: View {
                                 .accentColor(.purple)
                                 .frame(width: 120)
                                 .onChange(of: vm.balanceString) { newValue in
-                                    // оставить только цифры и запятую/точку
                                     let filtered = newValue.filter { $0.isNumber || $0 == "," || $0 == "." }
                                     if filtered != newValue {
                                         vm.balanceString = filtered
                                     }
                                 }
                         } else {
-                            // Отрисовка скрывающей шторки
                             let charCount = vm.formattedBalance.count + 1
                             let charWidth: CGFloat = 8
                             let padding: CGFloat = 16
                             let spoilerWidth = CGFloat(charCount) * charWidth + padding
                             let spoilerHeight: CGFloat = 24
-
                             ZStack(alignment: .trailing) {
                                 Text(vm.formattedBalance + " " + vm.currency.symbol)
                                     .bold()
@@ -79,7 +70,6 @@ struct AccountsView: View {
                                     .frame(width: spoilerWidth, alignment: .trailing)
                                     .lineLimit(1)
                                     .truncationMode(.tail)
-
                                 if vm.isBalanceHidden {
                                     Color("AccentColor").opacity(0.1)
                                         .frame(width: spoilerWidth, height: 44)
@@ -89,7 +79,6 @@ struct AccountsView: View {
                                         .cornerRadius(16)
                                         .allowsHitTesting(false)
                                 }
-
                                 SpoilerViewRepresentable(
                                     isHidden: $vm.isBalanceHidden,
                                     size: CGSize(width: spoilerWidth, height: spoilerHeight)
@@ -110,7 +99,6 @@ struct AccountsView: View {
                     .padding(.top, 16)
                     .padding(.horizontal, 16)
 
-                    // Валюта
                     HStack {
                         Text("Валюта")
                         Spacer()
@@ -139,21 +127,26 @@ struct AccountsView: View {
                     .padding(.top, 16)
                     .padding(.horizontal, 16)
 
+
+                    if !inEdit {
+        
+                        AccountChartView(vm: vm)
+                        
+                    }
+
                     Spacer(minLength: 20)
                 }
                 .hideKeyboardOnTap()
             }
             .background(Color(.systemGroupedBackground))
             .ignoresSafeArea(edges: .bottom)
-            // Pull to refresh
             .refreshable {
                 await vm.refresh()
             }
-
             .confirmationDialog("Выберите валюту",
                                 isPresented: $showCurrencyDialog,
                                 titleVisibility: .visible) {
-                ForEach(Currency.allCases, id: \.self) { cur in
+                ForEach(Currency.allCases, id: \ .self) { cur in
                     Button(cur.symbol) {
                         vm.currency = cur
                     }
@@ -161,7 +154,6 @@ struct AccountsView: View {
                 Button("Отмена", role: .cancel) {}
             }
             .navigationBarHidden(true)
-  
             .background(
                 ShakeDetector {
                     withAnimation(.easeInOut) {
@@ -171,15 +163,13 @@ struct AccountsView: View {
                 .allowsHitTesting(false)
             )
         }
-
         .overlayLoading(vm.isLoadingFromService)
         .errorAlert(message: Binding(
             get: { vm.serviceError },
             set: { _ in vm.serviceError = nil }
         ))
-
         .task {
-            await vm.load()
-        }
+                   await vm.reloadAll()
+               }
     }
 }

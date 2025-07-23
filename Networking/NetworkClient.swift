@@ -60,7 +60,7 @@ private struct APIErrorResponse: Decodable { let message: String? }
 
 
 
-final class NetworkClient {
+final class NetworkClient: @unchecked Sendable {
 
     static let shared = NetworkClient(
         baseURL: URL(string: "https://shmr-finance.ru/api/v1")!,
@@ -180,5 +180,24 @@ final class NetworkClient {
                 }
             }
         }
+    }
+}
+extension NetworkClient {
+
+
+    func get<Response: Decodable>(
+        path: String,
+        as type: Response.Type = Response.self,
+        query: [URLQueryItem] = [],
+        headers: [String: String] = [:]
+    ) async throws -> Response {
+
+        try await request(
+            Endpoint(path: path,
+                     method: .get,
+                     query: query,
+                     headers: headers),
+            responseType: type
+        )
     }
 }

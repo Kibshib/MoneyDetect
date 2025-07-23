@@ -5,6 +5,7 @@ struct TransactionsListView: View {
 
     @StateObject private var vm = TransactionsViewModel()
     @State private var categories: [Int: Category] = [:]
+    @State private var didAppear = false
 
     @State private var showCreator = false
     @State private var editingTx: Transaction?
@@ -18,7 +19,6 @@ struct TransactionsListView: View {
                 header
                 listView
             }
-            .task { await reload() }
             .background(Color(.systemGroupedBackground))
 
             // FAB "+"
@@ -61,6 +61,12 @@ struct TransactionsListView: View {
             }
         ))
         .navigationBarHidden(true)
+        .onAppear {
+            if !didAppear {
+                didAppear = true
+                Task { await reload() }
+            }
+        }
     }
 
     // MARK: – Header
