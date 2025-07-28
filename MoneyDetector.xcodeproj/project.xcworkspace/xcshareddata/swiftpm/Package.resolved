@@ -1,6 +1,15 @@
 {
-  "originHash" : "2dbbb8fea963d4524a14283932e27deb21060de45eb91d2e32b8d88217483785",
+  "originHash" : "d4ec2e26ec83fe244e9ec4a81ac741255b0a96de49500d2df2076c24e602f214",
   "pins" : [
+    {
+      "identity" : "filefor7hw",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Kibshib/FileFor7HW",
+      "state" : {
+        "branch" : "main",
+        "revision" : "37d47b9895bb45a068b4d9855e8b8ebefa4da830"
+      }
+    },
     {
       "identity" : "lottie-ios",
       "kind" : "remoteSourceControl",

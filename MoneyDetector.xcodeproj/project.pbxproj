@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		043B82C02E37FF2600DC4C03 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = 043B82BF2E37FF2600DC4C03 /* Lottie */; };
+		043B82C22E37FF2A00DC4C03 /* PieChart in Frameworks */ = {isa = PBXBuildFile; productRef = 043B82C12E37FF2A00DC4C03 /* PieChart */; };
 		043BA4FB2E2AFFEF00498AA3 /* PaddedLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 043BA4FA2E2AFFEE00498AA3 /* PaddedLabel.swift */; };
 		043BA5012E2B7A7300498AA3 /* AccountChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 043BA5002E2B7A7300498AA3 /* AccountChartView.swift */; };
 		043BA5032E2B808E00498AA3 /* HistoryDTO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 043BA5022E2B808D00498AA3 /* HistoryDTO.swift */; };
@@ -16,8 +18,6 @@
 		047354422E0FF55A00DCD5DD /* SpeechRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 047354412E0FF55A00DCD5DD /* SpeechRecognizer.swift */; };
 		0474AFAF2E2C3812004F24CF /* BalancePoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0474AFAE2E2C3811004F24CF /* BalancePoint.swift */; };
 		0474AFB12E2C4451004F24CF /* TransactionServise+Analytics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0474AFB02E2C4450004F24CF /* TransactionServise+Analytics.swift */; };
-		0474AFB62E2EE1F1004F24CF /* PieChart in Frameworks */ = {isa = PBXBuildFile; productRef = 0474AFB52E2EE1F1004F24CF /* PieChart */; };
-		0474B0542E30C675004F24CF /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = 0474B0532E30C675004F24CF /* Lottie */; };
 		0474B0622E31865A004F24CF /* LottieView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0474B05F2E31865A004F24CF /* LottieView.swift */; };
 		0474B0632E31865A004F24CF /* SplashScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0474B0602E31865A004F24CF /* SplashScreenView.swift */; };
 		0474B0662E318661004F24CF /* pigIllustration.json in Resources */ = {isa = PBXBuildFile; fileRef = 0474B0642E318661004F24CF /* pigIllustration.json */; };
@@ -145,8 +145,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0474AFB62E2EE1F1004F24CF /* PieChart in Frameworks */,
-				0474B0542E30C675004F24CF /* Lottie in Frameworks */,
+				043B82C22E37FF2A00DC4C03 /* PieChart in Frameworks */,
+				043B82C02E37FF2600DC4C03 /* Lottie in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -468,8 +468,8 @@
 			);
 			mainGroup = CE855A422DF85CEE0044E282;
 			packageReferences = (
-				0474AFB22E2C4F02004F24CF /* XCLocalSwiftPackageReference "../Utilities" */,
 				0474B0522E30C675004F24CF /* XCRemoteSwiftPackageReference "lottie-ios" */,
+				043B82BE2E37FE6800DC4C03 /* XCRemoteSwiftPackageReference "FileFor7HW" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = CE855A4C2DF85CEF0044E282 /* Products */;
@@ -821,14 +821,15 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCLocalSwiftPackageReference section */
-		0474AFB22E2C4F02004F24CF /* XCLocalSwiftPackageReference "../Utilities" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = ../Utilities;
-		};
-/* End XCLocalSwiftPackageReference section */
-
 /* Begin XCRemoteSwiftPackageReference section */
+		043B82BE2E37FE6800DC4C03 /* XCRemoteSwiftPackageReference "FileFor7HW" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Kibshib/FileFor7HW";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
 		0474B0522E30C675004F24CF /* XCRemoteSwiftPackageReference "lottie-ios" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/airbnb/lottie-ios";
@@ -840,14 +841,15 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		0474AFB52E2EE1F1004F24CF /* PieChart */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = PieChart;
-		};
-		0474B0532E30C675004F24CF /* Lottie */ = {
+		043B82BF2E37FF2600DC4C03 /* Lottie */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 0474B0522E30C675004F24CF /* XCRemoteSwiftPackageReference "lottie-ios" */;
 			productName = Lottie;
+		};
+		043B82C12E37FF2A00DC4C03 /* PieChart */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 043B82BE2E37FE6800DC4C03 /* XCRemoteSwiftPackageReference "FileFor7HW" */;
+			productName = PieChart;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
